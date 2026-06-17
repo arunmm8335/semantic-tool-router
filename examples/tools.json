@@ -1,0 +1,92 @@
+{
+  "tools": [
+    {
+      "name": "github_search_prs",
+      "description": "Search pull requests by repository, state, author, review status, or CI terms.",
+      "input_schema": {
+        "repository": "owner/name",
+        "query": "search text",
+        "state": "open, closed, or all"
+      },
+      "examples": [
+        "find open pull requests with failing CI",
+        "search PRs waiting for review"
+      ],
+      "tags": ["github", "pull-requests", "code-review"],
+      "permissions": ["network"],
+      "cost": "remote"
+    },
+    {
+      "name": "github_fetch_workflow_logs",
+      "description": "Fetch GitHub Actions workflow jobs, steps, and logs for a failing commit or pull request.",
+      "input_schema": {
+        "repository": "owner/name",
+        "run_id": "workflow run id"
+      },
+      "examples": [
+        "debug a failed GitHub Actions check",
+        "show logs for a failed CI job"
+      ],
+      "tags": ["github", "ci", "logs"],
+      "permissions": ["network"],
+      "cost": "remote"
+    },
+    {
+      "name": "filesystem_read",
+      "description": "Read local project files, list directories, and inspect source code.",
+      "input_schema": {
+        "path": "local file or directory path"
+      },
+      "examples": [
+        "inspect the README file",
+        "list source files in this project"
+      ],
+      "tags": ["filesystem", "local", "code"],
+      "permissions": ["read"],
+      "cost": "local"
+    },
+    {
+      "name": "python_unittest",
+      "description": "Run Python unit tests with the standard unittest runner.",
+      "input_schema": {
+        "test_path": "test module or directory"
+      },
+      "examples": [
+        "run the test suite",
+        "verify Python unit tests"
+      ],
+      "tags": ["python", "tests", "local"],
+      "permissions": ["execute"],
+      "cost": "local"
+    },
+    {
+      "name": "web_search",
+      "description": "Search the public web for current facts, documentation, news, prices, or citations.",
+      "input_schema": {
+        "query": "web search query"
+      },
+      "examples": [
+        "look up the latest model documentation",
+        "find current package release notes"
+      ],
+      "tags": ["web", "search", "current-information"],
+      "permissions": ["network"],
+      "cost": "remote"
+    },
+    {
+      "name": "image_generate",
+      "description": "Generate or edit bitmap images from a visual prompt or reference image.",
+      "input_schema": {
+        "prompt": "image generation instructions"
+      },
+      "examples": [
+        "create a product mockup image",
+        "generate an app hero background"
+      ],
+      "tags": ["image", "generation", "creative"],
+      "permissions": ["network"],
+      "cost": "remote"
+    }
+  ]
+}
+

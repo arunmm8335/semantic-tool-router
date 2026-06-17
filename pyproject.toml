@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-tool-router"
+version = "0.1.0"
+description = "Runtime semantic discovery for agent tools."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Semantic Tool Router Contributors" }]
+license = { text = "MIT" }
+keywords = ["agents", "tools", "retrieval", "mcp", "semantic-search"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+]
+
+[project.scripts]
+semantic-tool-router = "semantic_tool_router.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

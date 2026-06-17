@@ -1,0 +1,23 @@
+[
+  {
+    "query": "find open pull requests where the continuous integration checks failed",
+    "expected_tools": ["github_search_prs", "github_fetch_workflow_logs"]
+  },
+  {
+    "query": "inspect local source files and read the project README",
+    "expected_tools": ["filesystem_read"]
+  },
+  {
+    "query": "run python tests for this package",
+    "expected_tools": ["python_unittest"]
+  },
+  {
+    "query": "look up the latest public documentation with citations",
+    "expected_tools": ["web_search"]
+  },
+  {
+    "query": "generate a bitmap visual for an application landing page",
+    "expected_tools": ["image_generate"]
+  }
+]
+
