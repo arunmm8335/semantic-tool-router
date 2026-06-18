@@ -86,7 +86,98 @@
       "tags": ["image", "generation", "creative"],
       "permissions": ["network"],
       "cost": "remote"
+    },
+    {
+      "name": "git_commit_history",
+      "description": "Inspect local Git commit history, diffs, branches, authors, and changed files.",
+      "input_schema": {
+        "repository_path": "local repository path",
+        "revision": "commit, branch, or revision range"
+      },
+      "examples": [
+        "show the last commit",
+        "compare changes between two branches"
+      ],
+      "tags": ["git", "history", "code"],
+      "permissions": ["read"],
+      "cost": "local"
+    },
+    {
+      "name": "shell_execute",
+      "description": "Execute a local shell command or project build process.",
+      "input_schema": {
+        "command": "shell command",
+        "working_directory": "local directory"
+      },
+      "examples": [
+        "run the application build",
+        "execute a command in the terminal"
+      ],
+      "tags": ["shell", "terminal", "local"],
+      "permissions": ["execute"],
+      "cost": "local"
+    },
+    {
+      "name": "database_query",
+      "description": "Run a read-only SQL query against a relational database and return rows.",
+      "input_schema": {
+        "connection": "database connection name",
+        "sql": "read-only SQL statement"
+      },
+      "examples": [
+        "query customer records from PostgreSQL",
+        "count orders grouped by status"
+      ],
+      "tags": ["database", "sql", "data"],
+      "permissions": ["network", "read"],
+      "cost": "remote"
+    },
+    {
+      "name": "calendar_schedule",
+      "description": "Create, update, or inspect calendar events and meeting availability.",
+      "input_schema": {
+        "title": "event title",
+        "start": "event start time",
+        "attendees": "participant email addresses"
+      },
+      "examples": [
+        "schedule a meeting tomorrow",
+        "find a free time on the team calendar"
+      ],
+      "tags": ["calendar", "meetings", "productivity"],
+      "permissions": ["network", "write"],
+      "cost": "remote"
+    },
+    {
+      "name": "email_send",
+      "description": "Draft and send an email message to one or more recipients.",
+      "input_schema": {
+        "recipients": "email addresses",
+        "subject": "message subject",
+        "body": "message body"
+      },
+      "examples": [
+        "email the weekly project update",
+        "send a message to my mentor"
+      ],
+      "tags": ["email", "communication", "productivity"],
+      "permissions": ["network", "write"],
+      "cost": "remote"
+    },
+    {
+      "name": "pdf_extract_text",
+      "description": "Extract readable text, tables, and document metadata from PDF files.",
+      "input_schema": {
+        "path": "local PDF file path",
+        "pages": "optional page selection"
+      },
+      "examples": [
+        "read the tables in this PDF report",
+        "extract text from a research paper"
+      ],
+      "tags": ["pdf", "documents", "extraction"],
+      "permissions": ["read"],
+      "cost": "local"
     }
   ]
 }
-

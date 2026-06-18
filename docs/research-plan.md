@@ -4,9 +4,11 @@
 
 Agents can select tools more reliably and use less prompt context when tools are retrieved dynamically from a structured registry instead of injected all at once.
 
-## MVP Evaluation
+## Evaluation
 
-The first benchmark measures recall at `k`: whether at least one expected tool appears in the top retrieved results for a task.
+The benchmark reports hit rate, top-1 accuracy, mean reciprocal rank, mean
+recall, and mean precision. Per-task ranked results make retrieval errors
+visible instead of reducing the experiment to one pass/fail number.
 
 ```powershell
 python -m semantic_tool_router benchmark --registry examples/tools.json --tasks benchmarks/tasks.json --top-k 3
@@ -22,9 +24,11 @@ python -m semantic_tool_router benchmark --registry examples/tools.json --tasks 
 
 ## Metrics
 
-- `recall@k`: expected tool appears in top-k results.
-- `mrr`: expected tool rank quality.
+- `hit_rate@k`: fraction of tasks with at least one relevant result in top-k.
+- `top_1_accuracy`: fraction of tasks whose first result is relevant.
+- `mean_recall@k`: fraction of expected tools recovered per task.
+- `mean_precision@k`: fraction of retrieved tools that are relevant.
+- `mrr`: reciprocal rank of the first relevant tool, averaged across tasks.
 - `context_tokens_saved`: estimated prompt tokens avoided.
 - `unsafe_activation_rate`: privileged tools selected when not needed.
 - `fallback_rate`: agent needed a tool that retrieval did not expose.
-

@@ -32,6 +32,12 @@ Run the benchmark:
 python -m semantic_tool_router benchmark --registry examples/tools.json --tasks benchmarks/tasks.json
 ```
 
+Get machine-readable metrics:
+
+```powershell
+python -m semantic_tool_router benchmark --registry examples/tools.json --tasks benchmarks/tasks.json --json
+```
+
 Run tests:
 
 ```powershell
@@ -46,7 +52,11 @@ If you do not want to install the package yet, run commands with `PYTHONPATH=src
 - `src/semantic_tool_router/registry.py` loads and validates JSON tool registries.
 - `src/semantic_tool_router/embeddings.py` provides a local hashing embedder.
 - `src/semantic_tool_router/router.py` ranks tools with cosine similarity and filters.
+- `src/semantic_tool_router/evaluation.py` computes rank-aware retrieval metrics.
 - `src/semantic_tool_router/cli.py` exposes discovery and benchmark commands.
+
+Every push and pull request runs the unit tests and benchmark on Python 3.10,
+3.11, and 3.12 through GitHub Actions.
 
 ## Research Questions
 

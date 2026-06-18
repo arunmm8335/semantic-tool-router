@@ -18,6 +18,45 @@
   {
     "query": "generate a bitmap visual for an application landing page",
     "expected_tools": ["image_generate"]
+  },
+  {
+    "query": "show which files changed in the most recent git commit",
+    "expected_tools": ["git_commit_history"]
+  },
+  {
+    "query": "execute the frontend build command in the terminal",
+    "expected_tools": ["shell_execute"]
+  },
+  {
+    "query": "run a SQL query to count database orders by status",
+    "expected_tools": ["database_query"]
+  },
+  {
+    "query": "schedule a team meeting and invite attendees on the calendar",
+    "expected_tools": ["calendar_schedule"]
+  },
+  {
+    "query": "send my mentor an email with the research project update",
+    "expected_tools": ["email_send"]
+  },
+  {
+    "query": "extract tables and text from a PDF research report",
+    "expected_tools": ["pdf_extract_text"]
+  },
+  {
+    "query": "debug the logs from a failed GitHub Actions workflow run",
+    "expected_tools": ["github_fetch_workflow_logs"]
+  },
+  {
+    "query": "search GitHub for open pull requests waiting for review",
+    "expected_tools": ["github_search_prs"]
+  },
+  {
+    "query": "list the source directory and inspect a local configuration file",
+    "expected_tools": ["filesystem_read"]
+  },
+  {
+    "query": "find current release notes for a package on the public internet",
+    "expected_tools": ["web_search"]
   }
 ]
-
