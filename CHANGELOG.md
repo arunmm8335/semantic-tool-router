@@ -8,6 +8,7 @@
 - Add JSON benchmark output and GitHub Actions CI for Python 3.10-3.12.
 - Import and rank tools from live stdio MCP servers.
 - Add guarded MCP tool execution and a real filesystem-server demo.
+- Add a reproducible four-server live MCP benchmark and baseline report.
 
 ## 0.1.0-alpha - 2026-06-18
 

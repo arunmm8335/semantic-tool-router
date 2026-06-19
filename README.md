@@ -72,6 +72,24 @@ Use any stdio MCP server with the generic command:
 python -m semantic_tool_router mcp-discover "your task" --top-k 3 --server <command> <args>
 ```
 
+### Multi-Server Baseline
+
+Run the reproducible suite across four official MCP reference servers:
+
+```powershell
+python -m semantic_tool_router mcp-benchmark `
+  --suite benchmarks/live_mcp_suite.json `
+  --workspace . `
+  --json-output benchmarks/results/live_mcp_baseline.json `
+  --markdown-output benchmarks/results/live_mcp_baseline.md
+```
+
+The June 19, 2026 baseline covers 15 independently phrased tasks across
+Filesystem, Memory, Sequential Thinking, and Everything. Results are recorded
+in `benchmarks/results/live_mcp_baseline.md`. The current hashing retriever is
+useful but imperfect: it saves substantial schema context while leaving clear
+headroom for stronger semantic embeddings and reranking.
+
 If you do not want to install the package yet, run commands with `PYTHONPATH=src`.
 
 ## Project Shape

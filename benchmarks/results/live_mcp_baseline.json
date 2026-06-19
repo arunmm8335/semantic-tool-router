@@ -1,0 +1,330 @@
+{
+  "generated_at": "2026-06-19T07:29:08.697975+00:00",
+  "top_k": 3,
+  "server_count": 4,
+  "task_count": 15,
+  "metrics": {
+    "hit_rate": 0.7333333333333333,
+    "top_1_accuracy": 0.4,
+    "mrr": 0.5555555555555556,
+    "mean_context_saved": 0.6201765962025209
+  },
+  "nontrivial_task_count": 13,
+  "nontrivial_metrics": {
+    "hit_rate": 0.6923076923076923,
+    "top_1_accuracy": 0.3076923076923077,
+    "mrr": 0.48717948717948717,
+    "mean_context_saved": 0.7155883802336779
+  },
+  "servers": [
+    {
+      "id": "filesystem",
+      "server_name": "secure-filesystem-server",
+      "server_version": "0.2.0",
+      "available_tools": 14,
+      "metrics": {
+        "hit_rate": 0.75,
+        "top_1_accuracy": 0.25,
+        "mrr": 0.4583333333333333,
+        "mean_context_saved": 0.7699542034674518
+      },
+      "tasks": [
+        {
+          "query": "Open the project README and show me its text",
+          "expected_tools": [
+            "read_text_file"
+          ],
+          "retrieved_tools": [
+            "read_text_file",
+            "read_multiple_files",
+            "edit_file"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 784,
+          "estimated_context_saved": 0.7435394177298005
+        },
+        {
+          "query": "Show the files and folders directly inside the source directory",
+          "expected_tools": [
+            "list_directory",
+            "list_directory_with_sizes"
+          ],
+          "retrieved_tools": [
+            "move_file",
+            "search_files",
+            "list_directory"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.3333333333333333,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 665,
+          "estimated_context_saved": 0.7824664703958129
+        },
+        {
+          "query": "Find every Python source file under this project recursively",
+          "expected_tools": [
+            "search_files"
+          ],
+          "retrieved_tools": [
+            "move_file",
+            "list_allowed_directories",
+            "read_text_file"
+          ],
+          "hit": false,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 673,
+          "estimated_context_saved": 0.7798495256787701
+        },
+        {
+          "query": "Tell me the size and modification time of pyproject.toml",
+          "expected_tools": [
+            "get_file_info"
+          ],
+          "retrieved_tools": [
+            "read_text_file",
+            "get_file_info",
+            "move_file"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.5,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 691,
+          "estimated_context_saved": 0.7739614000654236
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "server_name": "memory-server",
+      "server_version": "0.6.3",
+      "available_tools": 9,
+      "metrics": {
+        "hit_rate": 0.6,
+        "top_1_accuracy": 0.2,
+        "mrr": 0.4,
+        "mean_context_saved": 0.6717781402936379
+      },
+      "tasks": [
+        {
+          "query": "Remember Arun as a person who is researching tool discovery",
+          "expected_tools": [
+            "create_entities"
+          ],
+          "retrieved_tools": [
+            "search_nodes",
+            "create_entities",
+            "create_relations"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.5,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 963,
+          "estimated_context_saved": 0.6072593800978793
+        },
+        {
+          "query": "Connect the semantic router project to the MCP research topic",
+          "expected_tools": [
+            "create_relations"
+          ],
+          "retrieved_tools": [
+            "add_observations",
+            "create_relations",
+            "read_graph"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.5,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 864,
+          "estimated_context_saved": 0.6476345840130506
+        },
+        {
+          "query": "Find anything previously remembered about Arun",
+          "expected_tools": [
+            "search_nodes",
+            "open_nodes"
+          ],
+          "retrieved_tools": [
+            "create_relations",
+            "delete_relations",
+            "delete_entities"
+          ],
+          "hit": false,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 701,
+          "estimated_context_saved": 0.7141109298531811
+        },
+        {
+          "query": "Show the complete stored knowledge graph",
+          "expected_tools": [
+            "read_graph"
+          ],
+          "retrieved_tools": [
+            "delete_observations",
+            "delete_relations",
+            "delete_entities"
+          ],
+          "hit": false,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 601,
+          "estimated_context_saved": 0.7548939641109298
+        },
+        {
+          "query": "Add another fact to an existing person's memory",
+          "expected_tools": [
+            "add_observations"
+          ],
+          "retrieved_tools": [
+            "add_observations",
+            "search_nodes",
+            "read_graph"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 895,
+          "estimated_context_saved": 0.6349918433931485
+        }
+      ]
+    },
+    {
+      "id": "sequential-thinking",
+      "server_name": "sequential-thinking-server",
+      "server_version": "0.2.0",
+      "available_tools": 1,
+      "metrics": {
+        "hit_rate": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0,
+        "mean_context_saved": 0.0
+      },
+      "tasks": [
+        {
+          "query": "Work through a difficult architecture decision step by step",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        },
+        {
+          "query": "Revise an earlier line of reasoning after discovering a mistake",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        }
+      ]
+    },
+    {
+      "id": "everything",
+      "server_name": "mcp-servers/everything",
+      "server_version": "2.0.0",
+      "available_tools": 13,
+      "metrics": {
+        "hit_rate": 0.75,
+        "top_1_accuracy": 0.5,
+        "mrr": 0.625,
+        "mean_context_saved": 0.7159853569249542
+      },
+      "tasks": [
+        {
+          "query": "Repeat my test message back to me",
+          "expected_tools": [
+            "echo"
+          ],
+          "retrieved_tools": [
+            "get-annotated-message",
+            "echo",
+            "get-env"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.5,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 307,
+          "estimated_context_saved": 0.8126906650396584
+        },
+        {
+          "query": "Add two numbers and return their total",
+          "expected_tools": [
+            "get-sum"
+          ],
+          "retrieved_tools": [
+            "get-sum",
+            "simulate-research-query",
+            "echo"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 372,
+          "estimated_context_saved": 0.773032336790726
+        },
+        {
+          "query": "Return a response containing structured data",
+          "expected_tools": [
+            "get-structured-content"
+          ],
+          "retrieved_tools": [
+            "get-structured-content",
+            "gzip-file-as-resource",
+            "get-resource-reference"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 602,
+          "estimated_context_saved": 0.6327028676021964
+        },
+        {
+          "query": "Start a task that takes a while to finish",
+          "expected_tools": [
+            "trigger-long-running-operation"
+          ],
+          "retrieved_tools": [
+            "gzip-file-as-resource",
+            "simulate-research-query",
+            "get-resource-reference"
+          ],
+          "hit": false,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 581,
+          "estimated_context_saved": 0.6455155582672361
+        }
+      ]
+    }
+  ]
+}

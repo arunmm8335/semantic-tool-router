@@ -34,6 +34,26 @@ This is a reproducible systems demonstration, not yet evidence of broad
 retrieval quality. The next experiment should repeat it across multiple MCP
 servers and use independently written tasks.
 
+## Multi-Server Baseline
+
+On June 19, 2026, the router was evaluated against four live official
+reference servers and 15 independently phrased tasks:
+
+- Filesystem
+- Memory
+- Sequential Thinking
+- Everything
+
+The initial hashing retriever achieved 73.3% hit-rate@3, 40.0% top-1
+accuracy, 0.556 MRR, and 62.0% mean estimated context savings. Because
+Sequential Thinking exposes only one tool, the generated report separately
+shows metrics excluding single-tool servers.
+
+These results establish a baseline rather than a performance claim. The
+failures identify the next experiment directly: compare lexical hashing with
+a sentence embedding model and a lightweight reranker on the same frozen
+tasks.
+
 ## Metrics
 
 - `hit_rate@k`: fraction of tasks with at least one relevant result in top-k.

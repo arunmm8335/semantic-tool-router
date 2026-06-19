@@ -5,6 +5,11 @@ import json
 from pathlib import Path
 
 from semantic_tool_router.evaluation import BenchmarkTask, evaluate
+from semantic_tool_router.live_benchmark import (
+    load_live_suite,
+    render_markdown,
+    run_live_suite,
+)
 from semantic_tool_router.mcp import McpError, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
 from semantic_tool_router.router import ToolRouter
@@ -58,6 +63,16 @@ def main(argv: list[str] | None = None) -> int:
         help="MCP server command; place this option after router options",
     )
 
+    live_parser = subparsers.add_parser(
+        "mcp-benchmark",
+        help="Evaluate discovery across multiple live MCP servers",
+    )
+    live_parser.add_argument("--suite", default="benchmarks/live_mcp_suite.json")
+    live_parser.add_argument("--workspace", default=".")
+    live_parser.add_argument("--timeout", type=float, default=60.0)
+    live_parser.add_argument("--json-output")
+    live_parser.add_argument("--markdown-output")
+
     args = parser.parse_args(argv)
 
     if args.command == "discover":
@@ -66,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
         return _benchmark(args)
     if args.command == "mcp-discover":
         return _mcp_discover(args)
+    if args.command == "mcp-benchmark":
+        return _mcp_benchmark(args)
     return 1
 
 
@@ -234,3 +251,25 @@ def _call_arguments(args: argparse.Namespace) -> dict[str, object]:
         except json.JSONDecodeError:
             arguments[key] = raw_value
     return arguments
+
+
+def _mcp_benchmark(args: argparse.Namespace) -> int:
+    try:
+        top_k, cases = load_live_suite(args.suite, args.workspace)
+        report = run_live_suite(cases, top_k=top_k, timeout=args.timeout)
+    except (McpError, OSError, ValueError, json.JSONDecodeError) as error:
+        print(f"Live MCP benchmark failed: {error}")
+        return 2
+
+    markdown = render_markdown(report)
+    print(markdown)
+    if args.json_output:
+        Path(args.json_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.json_output).write_text(
+            json.dumps(report, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if args.markdown_output:
+        Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
+    return 0

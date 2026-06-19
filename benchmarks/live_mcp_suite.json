@@ -1,0 +1,106 @@
+{
+  "top_k": 3,
+  "servers": [
+    {
+      "id": "filesystem",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "{workspace}"
+      ],
+      "tasks": [
+        {
+          "query": "Open the project README and show me its text",
+          "expected_tools": ["read_text_file"]
+        },
+        {
+          "query": "Show the files and folders directly inside the source directory",
+          "expected_tools": ["list_directory", "list_directory_with_sizes"]
+        },
+        {
+          "query": "Find every Python source file under this project recursively",
+          "expected_tools": ["search_files"]
+        },
+        {
+          "query": "Tell me the size and modification time of pyproject.toml",
+          "expected_tools": ["get_file_info"]
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "tasks": [
+        {
+          "query": "Remember Arun as a person who is researching tool discovery",
+          "expected_tools": ["create_entities"]
+        },
+        {
+          "query": "Connect the semantic router project to the MCP research topic",
+          "expected_tools": ["create_relations"]
+        },
+        {
+          "query": "Find anything previously remembered about Arun",
+          "expected_tools": ["search_nodes", "open_nodes"]
+        },
+        {
+          "query": "Show the complete stored knowledge graph",
+          "expected_tools": ["read_graph"]
+        },
+        {
+          "query": "Add another fact to an existing person's memory",
+          "expected_tools": ["add_observations"]
+        }
+      ]
+    },
+    {
+      "id": "sequential-thinking",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "tasks": [
+        {
+          "query": "Work through a difficult architecture decision step by step",
+          "expected_tools": ["sequentialthinking"]
+        },
+        {
+          "query": "Revise an earlier line of reasoning after discovering a mistake",
+          "expected_tools": ["sequentialthinking"]
+        }
+      ]
+    },
+    {
+      "id": "everything",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
+      "tasks": [
+        {
+          "query": "Repeat my test message back to me",
+          "expected_tools": ["echo"]
+        },
+        {
+          "query": "Add two numbers and return their total",
+          "expected_tools": ["get-sum"]
+        },
+        {
+          "query": "Return a response containing structured data",
+          "expected_tools": ["get-structured-content"]
+        },
+        {
+          "query": "Start a task that takes a while to finish",
+          "expected_tools": ["trigger-long-running-operation"]
+        }
+      ]
+    }
+  ]
+}
