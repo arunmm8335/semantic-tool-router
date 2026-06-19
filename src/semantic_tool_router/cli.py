@@ -4,6 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
+from semantic_tool_router.embeddings import (
+    EmbeddingProvider,
+    HashingEmbeddingProvider,
+    OpenAIEmbeddingProvider,
+    SentenceTransformerEmbeddingProvider,
+)
 from semantic_tool_router.evaluation import BenchmarkTask, evaluate
 from semantic_tool_router.live_benchmark import (
     load_live_suite,
@@ -13,6 +19,30 @@ from semantic_tool_router.live_benchmark import (
 from semantic_tool_router.mcp import McpError, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
 from semantic_tool_router.router import ToolRouter
+
+
+def add_embedder_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--embedder",
+        choices=["hashing", "sentence-transformers", "openai"],
+        default="hashing",
+        help="Embedding provider to use for semantic similarity routing (default: hashing)",
+    )
+    parser.add_argument(
+        "--embedding-model",
+        help="Embedding model name (e.g. 'all-MiniLM-L6-v2' or 'text-embedding-3-small')",
+    )
+
+
+def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
+    if args.embedder == "sentence-transformers":
+        model_name = args.embedding_model or "all-MiniLM-L6-v2"
+        return SentenceTransformerEmbeddingProvider(model_name=model_name)
+    elif args.embedder == "openai":
+        model_name = args.embedding_model or "text-embedding-3-small"
+        return OpenAIEmbeddingProvider(model=model_name)
+    else:
+        return HashingEmbeddingProvider()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -25,12 +55,14 @@ def main(argv: list[str] | None = None) -> int:
     discover_parser.add_argument("--top-k", type=int, default=5)
     discover_parser.add_argument("--tag", action="append", default=[])
     discover_parser.add_argument("--allow-permission", action="append")
+    add_embedder_args(discover_parser)
 
     benchmark_parser = subparsers.add_parser("benchmark", help="Evaluate retrieval on task fixtures")
     benchmark_parser.add_argument("--registry", default="examples/tools.json")
     benchmark_parser.add_argument("--tasks", default="benchmarks/tasks.json")
     benchmark_parser.add_argument("--top-k", type=int, default=3)
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
+    add_embedder_args(benchmark_parser)
 
     mcp_parser = subparsers.add_parser(
         "mcp-discover",
@@ -56,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
         "--expect-tool",
         help="Abort execution unless this tool is ranked first",
     )
+    add_embedder_args(mcp_parser)
     mcp_parser.add_argument(
         "--server",
         required=True,
@@ -72,6 +105,7 @@ def main(argv: list[str] | None = None) -> int:
     live_parser.add_argument("--timeout", type=float, default=60.0)
     live_parser.add_argument("--json-output")
     live_parser.add_argument("--markdown-output")
+    add_embedder_args(live_parser)
 
     args = parser.parse_args(argv)
 
@@ -88,7 +122,8 @@ def main(argv: list[str] | None = None) -> int:
 
 def _discover(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
-    router = ToolRouter(registry)
+    embedder = _build_embedder(args)
+    router = ToolRouter(registry, embedding_provider=embedder)
     allow_permissions = set(args.allow_permission) if args.allow_permission is not None else None
     results = router.discover(
         args.query,
@@ -107,7 +142,8 @@ def _discover(args: argparse.Namespace) -> int:
 
 def _benchmark(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
-    router = ToolRouter(registry)
+    embedder = _build_embedder(args)
+    router = ToolRouter(registry, embedding_provider=embedder)
     task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
     tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
     report = evaluate(router, tasks, top_k=args.top_k)
@@ -145,7 +181,8 @@ def _mcp_discover(args: argparse.Namespace) -> int:
                 if args.allow_permission is not None
                 else None
             )
-            results = ToolRouter(registry).discover(
+            embedder = _build_embedder(args)
+            results = ToolRouter(registry, embedding_provider=embedder).discover(
                 args.query,
                 top_k=args.top_k,
                 allow_permissions=allow_permissions,
@@ -256,7 +293,13 @@ def _call_arguments(args: argparse.Namespace) -> dict[str, object]:
 def _mcp_benchmark(args: argparse.Namespace) -> int:
     try:
         top_k, cases = load_live_suite(args.suite, args.workspace)
-        report = run_live_suite(cases, top_k=top_k, timeout=args.timeout)
+        embedder = _build_embedder(args)
+        report = run_live_suite(
+            cases,
+            top_k=top_k,
+            timeout=args.timeout,
+            embedding_provider=embedder,
+        )
     except (McpError, OSError, ValueError, json.JSONDecodeError) as error:
         print(f"Live MCP benchmark failed: {error}")
         return 2

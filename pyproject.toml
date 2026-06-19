@@ -20,6 +20,10 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 
+[project.optional-dependencies]
+sentence-transformers = ["sentence-transformers>=2.2.0"]
+openai = ["openai>=1.0.0"]
+
 [project.scripts]
 semantic-tool-router = "semantic_tool_router.cli:main"
 

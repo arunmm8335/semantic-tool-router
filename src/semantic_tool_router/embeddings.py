@@ -63,3 +63,50 @@ def _normalize(vector: list[float]) -> list[float]:
         return vector
     return [value / magnitude for value in vector]
 
+
+class SentenceTransformerEmbeddingProvider:
+    """Embedding provider using local sentence-transformers models."""
+
+    def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as err:
+            raise ImportError(
+                "sentence-transformers is required to use SentenceTransformerEmbeddingProvider. "
+                "Install it with `pip install semantic-tool-router[sentence-transformers]`"
+            ) from err
+        self.model = SentenceTransformer(model_name)
+
+    def embed(self, text: str) -> list[float]:
+        embedding = self.model.encode(text, convert_to_numpy=True)
+        # Ensure it returns list[float]
+        return [float(x) for x in embedding.tolist()]
+
+
+class OpenAIEmbeddingProvider:
+    """Embedding provider using OpenAI's embedding API."""
+
+    def __init__(
+        self,
+        model: str = "text-embedding-3-small",
+        api_key: str | None = None,
+        base_url: str | None = None,
+    ) -> None:
+        try:
+            import openai
+        except ImportError as err:
+            raise ImportError(
+                "openai is required to use OpenAIEmbeddingProvider. "
+                "Install it with `pip install semantic-tool-router[openai]`"
+            ) from err
+        self.client = openai.OpenAI(api_key=api_key, base_url=base_url)
+        self.model = model
+
+    def embed(self, text: str) -> list[float]:
+        response = self.client.embeddings.create(
+            input=[text],
+            model=self.model,
+        )
+        return [float(x) for x in response.data[0].embedding]
+
+

@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from semantic_tool_router.embeddings import EmbeddingProvider
 from semantic_tool_router.mcp import McpServerSnapshot, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
 from semantic_tool_router.router import ToolRouter
@@ -60,12 +61,15 @@ def run_live_suite(
     cases: tuple[LiveServerCase, ...],
     top_k: int,
     timeout: float = 60.0,
+    embedding_provider: EmbeddingProvider | None = None,
 ) -> dict[str, Any]:
     server_reports = []
     for case in cases:
         with StdioMcpClient(list(case.command), timeout=timeout) as client:
             snapshot = client.snapshot()
-        server_reports.append(_evaluate_server(case, snapshot, top_k))
+        server_reports.append(
+            _evaluate_server(case, snapshot, top_k, embedding_provider=embedding_provider)
+        )
 
     task_reports = [
         task
@@ -145,8 +149,12 @@ def _evaluate_server(
     case: LiveServerCase,
     snapshot: McpServerSnapshot,
     top_k: int,
+    embedding_provider: EmbeddingProvider | None = None,
 ) -> dict[str, Any]:
-    router = ToolRouter(ToolRegistry(list(snapshot.tools)))
+    router = ToolRouter(
+        ToolRegistry(list(snapshot.tools)),
+        embedding_provider=embedding_provider,
+    )
     raw_by_name = {
         str(tool.get("name")): tool
         for tool in snapshot.raw_tools
