@@ -55,7 +55,25 @@ class ToolRouterTests(unittest.TestCase):
 
         self.assertEqual([result.tool.name for result in results], ["read_file"])
 
+    def test_deprecated_tools_are_penalized(self) -> None:
+        registry = ToolRegistry(
+            [
+                ToolSpec(
+                    name="read_file",
+                    description="Read a file. DEPRECATED: use read_text_file.",
+                    tags=("deprecated",),
+                ),
+                ToolSpec(
+                    name="read_text_file",
+                    description="Read a text file.",
+                ),
+            ]
+        )
+
+        results = ToolRouter(registry).discover("read a text file", top_k=1)
+
+        self.assertEqual(results[0].tool.name, "read_text_file")
+
 
 if __name__ == "__main__":
     unittest.main()
-

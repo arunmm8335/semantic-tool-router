@@ -22,6 +22,18 @@ python -m semantic_tool_router benchmark --registry examples/tools.json --tasks 
 4. Add safety scoring: penalize tools with network, write, execute, or destructive permissions unless the task clearly needs them.
 5. Build MCP import: convert MCP tool schemas into registry entries automatically.
 
+## Live Scenario
+
+The first live scenario connects to the official filesystem MCP server and
+discovers tools directly from `tools/list`. For a request to read this
+project's README, the router selects `read_text_file`, exposes only three of
+the server's tools, and executes the selected tool with an explicit
+expectation guard.
+
+This is a reproducible systems demonstration, not yet evidence of broad
+retrieval quality. The next experiment should repeat it across multiple MCP
+servers and use independently written tasks.
+
 ## Metrics
 
 - `hit_rate@k`: fraction of tasks with at least one relevant result in top-k.

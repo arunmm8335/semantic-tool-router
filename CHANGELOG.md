@@ -6,6 +6,8 @@
 - Report hit rate, top-1 accuracy, MRR, mean recall, and mean precision.
 - Expand the example registry to 12 tools and the benchmark to 15 tasks.
 - Add JSON benchmark output and GitHub Actions CI for Python 3.10-3.12.
+- Import and rank tools from live stdio MCP servers.
+- Add guarded MCP tool execution and a real filesystem-server demo.
 
 ## 0.1.0-alpha - 2026-06-18
 

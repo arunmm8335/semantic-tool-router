@@ -44,6 +44,34 @@ Run tests:
 python -m unittest discover -s tests
 ```
 
+## Live MCP Demo
+
+The live demo starts the official filesystem MCP server, imports its tool
+schemas at runtime, retrieves three read-only tools, and executes the
+highest-ranked tool against this repository:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File examples/live_mcp_demo.ps1
+```
+
+Expected behavior:
+
+- Connect to the real `@modelcontextprotocol/server-filesystem` process.
+- Import its current tools through MCP `tools/list`.
+- Select `read_text_file` from a natural-language task.
+- Show estimated tool-schema context savings.
+- Execute `read_text_file` and print the first lines of this README.
+
+Node.js and `npx` are required. The server is granted access only to the
+current project directory. Execution requires both explicit arguments and an
+`--expect-tool` guard; the command aborts if a different tool ranks first.
+
+Use any stdio MCP server with the generic command:
+
+```powershell
+python -m semantic_tool_router mcp-discover "your task" --top-k 3 --server <command> <args>
+```
+
 If you do not want to install the package yet, run commands with `PYTHONPATH=src`.
 
 ## Project Shape
@@ -53,6 +81,7 @@ If you do not want to install the package yet, run commands with `PYTHONPATH=src
 - `src/semantic_tool_router/embeddings.py` provides a local hashing embedder.
 - `src/semantic_tool_router/router.py` ranks tools with cosine similarity and filters.
 - `src/semantic_tool_router/evaluation.py` computes rank-aware retrieval metrics.
+- `src/semantic_tool_router/mcp.py` imports tools from live stdio MCP servers.
 - `src/semantic_tool_router/cli.py` exposes discovery and benchmark commands.
 
 Every push and pull request runs the unit tests and benchmark on Python 3.10,

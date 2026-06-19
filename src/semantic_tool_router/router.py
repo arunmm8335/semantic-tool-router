@@ -42,6 +42,8 @@ class ToolRouter:
                 continue
 
             score = cosine_similarity(query_vector, self._tool_vectors[tool.name])
+            if "deprecated" in tool.tags:
+                score -= 0.25
             reasons = _reasons(query, tool)
             results.append(DiscoveryResult(tool=tool, score=score, reasons=tuple(reasons)))
 
@@ -61,4 +63,3 @@ def _reasons(query: str, tool: ToolSpec) -> list[str]:
     if tool.permissions:
         reasons.append(f"permissions: {', '.join(tool.permissions)}")
     return reasons
-
