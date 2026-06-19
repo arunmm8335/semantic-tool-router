@@ -14,20 +14,11 @@ Semantic Tool Router is a dependency-light library designed to manage the "Many-
 ## How It Works
 
 ```mermaid
-graph TD
-    Query[User Task Query] --> QueryEmbed[Embed Query]
-    Registry[MCP Servers / JSON Registry] --> ToolSpecs[Extract Tool Specs]
-    ToolSpecs --> EmbedTools[Embed Tool metadata]
-    QueryEmbed --> Routing{Cosine Similarity}
-    EmbedTools --> Routing
-    Routing --> Filters{Tag & Permission Filters}
-    Filters --> Ranked[Ranked Candidate Tools]
-    Ranked --> TopK[Select Top-K Tools]
-    TopK --> LLM[LLM Context Window]
-
-    style Query fill:#d1e7dd,stroke:#0f5132,stroke-width:2px
-    style LLM fill:#cff4fc,stroke:#087990,stroke-width:2px
-    style Routing fill:#f8d7da,stroke:#842029,stroke-width:2px
+graph LR
+    Query[Task Query] --> Router(Tool Router)
+    Registry[Tool Registry] --> Router
+    Router --> Filters{Filters}
+    Filters --> LLM[LLM Context]
 ```
 
 1. **Tool Indexing:** Tool descriptions, schemas, tags, examples, and permissions are compiled into search strings and vectorized.
