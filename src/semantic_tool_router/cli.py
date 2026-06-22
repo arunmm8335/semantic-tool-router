@@ -18,6 +18,7 @@ from semantic_tool_router.live_benchmark import (
 )
 from semantic_tool_router.mcp import McpError, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
+from semantic_tool_router.reranker import CrossEncoderReranker, Reranker
 from semantic_tool_router.router import ToolRouter
 
 
@@ -34,6 +35,19 @@ def add_embedder_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def add_reranker_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--reranker",
+        choices=["none", "cross-encoder"],
+        default="none",
+        help="Optional second-stage reranker (default: none)",
+    )
+    parser.add_argument(
+        "--reranker-model",
+        help="Reranker model name (default: cross-encoder/ms-marco-MiniLM-L-6-v2)",
+    )
+
+
 def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
     if args.embedder == "sentence-transformers":
         model_name = args.embedding_model or "all-MiniLM-L6-v2"
@@ -43,6 +57,13 @@ def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
         return OpenAIEmbeddingProvider(model=model_name)
     else:
         return HashingEmbeddingProvider()
+
+
+def _build_reranker(args: argparse.Namespace) -> Reranker | None:
+    if getattr(args, "reranker", "none") == "cross-encoder":
+        model_name = args.reranker_model or CrossEncoderReranker.DEFAULT_MODEL
+        return CrossEncoderReranker(model_name=model_name)
+    return None
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -56,13 +77,17 @@ def main(argv: list[str] | None = None) -> int:
     discover_parser.add_argument("--tag", action="append", default=[])
     discover_parser.add_argument("--allow-permission", action="append")
     add_embedder_args(discover_parser)
+    add_reranker_args(discover_parser)
 
-    benchmark_parser = subparsers.add_parser("benchmark", help="Evaluate retrieval on task fixtures")
+    benchmark_parser = subparsers.add_parser(
+        "benchmark", help="Evaluate retrieval on task fixtures"
+    )
     benchmark_parser.add_argument("--registry", default="examples/tools.json")
     benchmark_parser.add_argument("--tasks", default="benchmarks/tasks.json")
     benchmark_parser.add_argument("--top-k", type=int, default=3)
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
     add_embedder_args(benchmark_parser)
+    add_reranker_args(benchmark_parser)
 
     mcp_parser = subparsers.add_parser(
         "mcp-discover",
@@ -89,6 +114,7 @@ def main(argv: list[str] | None = None) -> int:
         help="Abort execution unless this tool is ranked first",
     )
     add_embedder_args(mcp_parser)
+    add_reranker_args(mcp_parser)
     mcp_parser.add_argument(
         "--server",
         required=True,
@@ -106,6 +132,7 @@ def main(argv: list[str] | None = None) -> int:
     live_parser.add_argument("--json-output")
     live_parser.add_argument("--markdown-output")
     add_embedder_args(live_parser)
+    add_reranker_args(live_parser)
 
     args = parser.parse_args(argv)
 
@@ -123,7 +150,8 @@ def main(argv: list[str] | None = None) -> int:
 def _discover(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
     embedder = _build_embedder(args)
-    router = ToolRouter(registry, embedding_provider=embedder)
+    reranker = _build_reranker(args)
+    router = ToolRouter(registry, embedding_provider=embedder, reranker=reranker)
     allow_permissions = set(args.allow_permission) if args.allow_permission is not None else None
     results = router.discover(
         args.query,
@@ -143,7 +171,8 @@ def _discover(args: argparse.Namespace) -> int:
 def _benchmark(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
     embedder = _build_embedder(args)
-    router = ToolRouter(registry, embedding_provider=embedder)
+    reranker = _build_reranker(args)
+    router = ToolRouter(registry, embedding_provider=embedder, reranker=reranker)
     task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
     tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
     report = evaluate(router, tasks, top_k=args.top_k)
@@ -177,12 +206,13 @@ def _mcp_discover(args: argparse.Namespace) -> int:
             snapshot = client.snapshot()
             registry = ToolRegistry(list(snapshot.tools))
             allow_permissions = (
-                set(args.allow_permission)
-                if args.allow_permission is not None
-                else None
+                set(args.allow_permission) if args.allow_permission is not None else None
             )
             embedder = _build_embedder(args)
-            results = ToolRouter(registry, embedding_provider=embedder).discover(
+            reranker = _build_reranker(args)
+            results = ToolRouter(
+                registry, embedding_provider=embedder, reranker=reranker
+            ).discover(
                 args.query,
                 top_k=args.top_k,
                 allow_permissions=allow_permissions,
@@ -196,8 +226,7 @@ def _mcp_discover(args: argparse.Namespace) -> int:
                     raise McpError("Execution requires --expect-tool")
                 if results[0].tool.name != args.expect_tool:
                     raise McpError(
-                        f"Expected {args.expect_tool!r}, but selected "
-                        f"{results[0].tool.name!r}"
+                        f"Expected {args.expect_tool!r}, but selected {results[0].tool.name!r}"
                     )
                 arguments = _call_arguments(args)
                 call_result = client.call_tool(results[0].tool.name, arguments)
@@ -206,9 +235,7 @@ def _mcp_discover(args: argparse.Namespace) -> int:
         return 2
 
     selected_names = {result.tool.name for result in results}
-    selected_raw = [
-        tool for tool in snapshot.raw_tools if str(tool.get("name")) in selected_names
-    ]
+    selected_raw = [tool for tool in snapshot.raw_tools if str(tool.get("name")) in selected_names]
     all_tokens = estimate_tokens(snapshot.raw_tools)
     selected_tokens = estimate_tokens(selected_raw)
     savings = 1.0 - (selected_tokens / all_tokens) if all_tokens else 0.0
@@ -224,8 +251,7 @@ def _mcp_discover(args: argparse.Namespace) -> int:
                     "query": args.query,
                     "available_tools": len(snapshot.tools),
                     "selected_tools": [
-                        {"name": item.tool.name, "score": item.score}
-                        for item in results
+                        {"name": item.tool.name, "score": item.score} for item in results
                     ],
                     "estimated_context_tokens": {
                         "all_tools": all_tokens,
@@ -262,9 +288,7 @@ def _format_call_result(result: dict[str, object]) -> str:
     if not isinstance(content, list):
         return json.dumps(result, indent=2)
     text_parts = [
-        str(item["text"])
-        for item in content
-        if isinstance(item, dict) and "text" in item
+        str(item["text"]) for item in content if isinstance(item, dict) and "text" in item
     ]
     return "\n".join(text_parts) if text_parts else json.dumps(result, indent=2)
 
@@ -294,11 +318,13 @@ def _mcp_benchmark(args: argparse.Namespace) -> int:
     try:
         top_k, cases = load_live_suite(args.suite, args.workspace)
         embedder = _build_embedder(args)
+        reranker = _build_reranker(args)
         report = run_live_suite(
             cases,
             top_k=top_k,
             timeout=args.timeout,
             embedding_provider=embedder,
+            reranker=reranker,
         )
     except (McpError, OSError, ValueError, json.JSONDecodeError) as error:
         print(f"Live MCP benchmark failed: {error}")

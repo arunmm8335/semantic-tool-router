@@ -7,6 +7,7 @@ from semantic_tool_router.embeddings import (
 )
 from semantic_tool_router.models import DiscoveryResult, ToolSpec
 from semantic_tool_router.registry import ToolRegistry
+from semantic_tool_router.reranker import Reranker
 
 
 class ToolRouter:
@@ -14,9 +15,15 @@ class ToolRouter:
         self,
         registry: ToolRegistry,
         embedding_provider: EmbeddingProvider | None = None,
+        reranker: Reranker | None = None,
+        rerank_multiplier: int = 3,
     ) -> None:
+        if rerank_multiplier < 1:
+            raise ValueError("rerank_multiplier must be >= 1")
         self.registry = registry
         self.embedding_provider = embedding_provider or HashingEmbeddingProvider()
+        self.reranker = reranker
+        self.rerank_multiplier = rerank_multiplier
         self._tool_vectors = {
             tool.name: self.embedding_provider.embed(tool.searchable_text())
             for tool in self.registry.tools()
@@ -38,7 +45,9 @@ class ToolRouter:
         for tool in self.registry.tools():
             if require_tags and not require_tags.issubset(set(tool.tags)):
                 continue
-            if allow_permissions is not None and not set(tool.permissions).issubset(allow_permissions):
+            if allow_permissions is not None and not set(tool.permissions).issubset(
+                allow_permissions
+            ):
                 continue
 
             score = cosine_similarity(query_vector, self._tool_vectors[tool.name])
@@ -47,7 +56,15 @@ class ToolRouter:
             reasons = _reasons(query, tool)
             results.append(DiscoveryResult(tool=tool, score=score, reasons=tuple(reasons)))
 
-        return sorted(results, key=lambda item: item.score, reverse=True)[:top_k]
+        ranked = sorted(results, key=lambda item: item.score, reverse=True)
+        if self.reranker is not None:
+            candidate_pool = ranked[: max(top_k, top_k * self.rerank_multiplier)]
+            ranked = self.reranker.rerank(query, candidate_pool)
+            # Re-sort defensively: rerankers document that they return
+            # score-ordered output, but the router's contract is that
+            # callers always receive results sorted by score desc.
+            ranked = sorted(ranked, key=lambda item: item.score, reverse=True)
+        return ranked[:top_k]
 
 
 def _reasons(query: str, tool: ToolSpec) -> list[str]:
