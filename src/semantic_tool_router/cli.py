@@ -210,9 +210,7 @@ def _mcp_discover(args: argparse.Namespace) -> int:
             )
             embedder = _build_embedder(args)
             reranker = _build_reranker(args)
-            results = ToolRouter(
-                registry, embedding_provider=embedder, reranker=reranker
-            ).discover(
+            results = ToolRouter(registry, embedding_provider=embedder, reranker=reranker).discover(
                 args.query,
                 top_k=args.top_k,
                 allow_permissions=allow_permissions,

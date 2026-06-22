@@ -13,8 +13,7 @@ class Reranker(Protocol):
     required, but emitting sorted output is the documented contract.
     """
 
-    def rerank(self, query: str, candidates: list[DiscoveryResult]) -> list[DiscoveryResult]:
-        ...
+    def rerank(self, query: str, candidates: list[DiscoveryResult]) -> list[DiscoveryResult]: ...
 
 
 class CrossEncoderReranker:
@@ -30,7 +29,7 @@ class CrossEncoderReranker:
 
     def __init__(self, model_name: str = DEFAULT_MODEL) -> None:
         try:
-            from sentence_transformers import CrossEncoder  # type: ignore[import-not-found]
+            from sentence_transformers import CrossEncoder
         except ImportError as err:
             raise ImportError(
                 "sentence-transformers is required to use CrossEncoderReranker. "
@@ -39,9 +38,7 @@ class CrossEncoderReranker:
         self.model_name = model_name
         self.model = CrossEncoder(model_name)
 
-    def rerank(
-        self, query: str, candidates: list[DiscoveryResult]
-    ) -> list[DiscoveryResult]:
+    def rerank(self, query: str, candidates: list[DiscoveryResult]) -> list[DiscoveryResult]:
         if not candidates:
             return []
         pairs = [(query, _candidate_text(item)) for item in candidates]

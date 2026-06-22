@@ -15,7 +15,11 @@ class BenchmarkTask:
     def from_dict(cls, data: dict[str, object]) -> BenchmarkTask:
         query = str(data.get("query", "")).strip()
         expected_tools_raw = data.get("expected_tools", [])
-        expected = tuple(str(item) for item in expected_tools_raw) if isinstance(expected_tools_raw, list) else ()
+        expected = (
+            tuple(str(item) for item in expected_tools_raw)
+            if isinstance(expected_tools_raw, list)
+            else ()
+        )
         if not query:
             raise ValueError("Benchmark task is missing a query")
         if not expected:

@@ -47,9 +47,7 @@ class RerankerProtocolTests(unittest.TestCase):
         class _ScoreReversingReranker:
             def rerank(self, query, candidates):
                 return [
-                    DiscoveryResult(
-                        tool=item.tool, score=float(index), reasons=item.reasons
-                    )
+                    DiscoveryResult(tool=item.tool, score=float(index), reasons=item.reasons)
                     for index, item in enumerate(candidates)
                 ]
 
@@ -100,9 +98,7 @@ class RerankerProtocolTests(unittest.TestCase):
             ]
         )
 
-        results = ToolRouter(registry, reranker=_UnsortedReranker()).discover(
-            "alpha", top_k=4
-        )
+        results = ToolRouter(registry, reranker=_UnsortedReranker()).discover("alpha", top_k=4)
         scores = [item.score for item in results]
         self.assertEqual(scores, sorted(scores, reverse=True))
 
