@@ -15,7 +15,7 @@ class ToolSpec:
     cost: str = "local"
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ToolSpec":
+    def from_dict(cls, data: dict[str, Any]) -> ToolSpec:
         required = ("name", "description")
         missing = [key for key in required if not data.get(key)]
         if missing:
@@ -54,4 +54,3 @@ class DiscoveryResult:
     tool: ToolSpec
     score: float
     reasons: tuple[str, ...] = ()
-

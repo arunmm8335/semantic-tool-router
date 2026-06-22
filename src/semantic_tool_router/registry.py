@@ -16,7 +16,7 @@ class ToolRegistry:
         self._tools = tuple(tools)
 
     @classmethod
-    def from_file(cls, path: str | Path) -> "ToolRegistry":
+    def from_file(cls, path: str | Path) -> ToolRegistry:
         data = json.loads(Path(path).read_text(encoding="utf-8"))
         if isinstance(data, dict):
             data = data.get("tools", [])
@@ -26,4 +26,3 @@ class ToolRegistry:
 
     def tools(self) -> tuple[ToolSpec, ...]:
         return self._tools
-

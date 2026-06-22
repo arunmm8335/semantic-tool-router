@@ -47,7 +47,9 @@ class ToolRouterTests(unittest.TestCase):
         registry = ToolRegistry(
             [
                 ToolSpec(name="read_file", description="Read a local file", permissions=("read",)),
-                ToolSpec(name="run_shell", description="Run a shell command", permissions=("execute",)),
+                ToolSpec(
+                    name="run_shell", description="Run a shell command", permissions=("execute",)
+                ),
             ]
         )
 

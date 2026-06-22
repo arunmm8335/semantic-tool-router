@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
@@ -30,21 +29,21 @@ class EmbeddingsTests(unittest.TestCase):
 
     def test_sentence_transformer_mocked(self) -> None:
         mock_model = MagicMock()
-        
+
         # We simulate the returned array as a helper class that has tolist()
         class FakeArray:
             def tolist(self) -> list[float]:
                 return [0.1, 0.2, 0.3]
-        
+
         mock_model.encode.return_value = FakeArray()
-        
+
         # Create a mock SentenceTransformer class
         mock_st_class = MagicMock(return_value=mock_model)
-        
+
         # Create a dummy module to mock sentence_transformers
         mock_module = MagicMock()
         mock_module.SentenceTransformer = mock_st_class
-        
+
         with patch.dict("sys.modules", {"sentence_transformers": mock_module}):
             provider = SentenceTransformerEmbeddingProvider()
             vector = provider.embed("test text")
@@ -60,13 +59,13 @@ class EmbeddingsTests(unittest.TestCase):
 
     def test_openai_mocked(self) -> None:
         mock_client = MagicMock()
-        
+
         mock_embedding_data = MagicMock()
         mock_embedding_data.embedding = [0.5, 0.6, 0.7]
-        
+
         mock_response = MagicMock()
         mock_response.data = [mock_embedding_data]
-        
+
         mock_client.embeddings.create.return_value = mock_response
 
         # Create a mock OpenAI class

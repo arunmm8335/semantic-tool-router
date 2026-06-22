@@ -6,13 +6,11 @@ import re
 from collections import Counter
 from typing import Protocol
 
-
 TOKEN_RE = re.compile(r"[a-zA-Z0-9_./:-]+")
 
 
 class EmbeddingProvider(Protocol):
-    def embed(self, text: str) -> list[float]:
-        ...
+    def embed(self, text: str) -> list[float]: ...
 
 
 class HashingEmbeddingProvider:
@@ -39,7 +37,7 @@ class HashingEmbeddingProvider:
 def cosine_similarity(left: list[float], right: list[float]) -> float:
     if len(left) != len(right):
         raise ValueError("vectors must have equal dimensions")
-    return sum(a * b for a, b in zip(left, right))
+    return sum(a * b for a, b in zip(left, right, strict=False))
 
 
 def _tokens(text: str) -> list[str]:
@@ -108,5 +106,3 @@ class OpenAIEmbeddingProvider:
             model=self.model,
         )
         return [float(x) for x in response.data[0].embedding]
-
-

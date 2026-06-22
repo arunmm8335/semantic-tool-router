@@ -9,6 +9,7 @@ from typing import Any
 from semantic_tool_router.embeddings import EmbeddingProvider
 from semantic_tool_router.mcp import McpServerSnapshot, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
+from semantic_tool_router.reranker import Reranker
 from semantic_tool_router.router import ToolRouter
 
 
@@ -25,7 +26,9 @@ class LiveServerCase:
     tasks: tuple[LiveTask, ...]
 
 
-def load_live_suite(path: str | Path, workspace: str | Path) -> tuple[int, tuple[LiveServerCase, ...]]:
+def load_live_suite(
+    path: str | Path, workspace: str | Path
+) -> tuple[int, tuple[LiveServerCase, ...]]:
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     top_k = int(data.get("top_k", 3))
     if top_k <= 0:
@@ -35,8 +38,7 @@ def load_live_suite(path: str | Path, workspace: str | Path) -> tuple[int, tuple
     cases = []
     for server in data.get("servers", []):
         command = tuple(
-            str(part).replace("{workspace}", workspace_value)
-            for part in server["command"]
+            str(part).replace("{workspace}", workspace_value) for part in server["command"]
         )
         tasks = tuple(
             LiveTask(
@@ -62,20 +64,23 @@ def run_live_suite(
     top_k: int,
     timeout: float = 60.0,
     embedding_provider: EmbeddingProvider | None = None,
+    reranker: Reranker | None = None,
 ) -> dict[str, Any]:
     server_reports = []
     for case in cases:
         with StdioMcpClient(list(case.command), timeout=timeout) as client:
             snapshot = client.snapshot()
         server_reports.append(
-            _evaluate_server(case, snapshot, top_k, embedding_provider=embedding_provider)
+            _evaluate_server(
+                case,
+                snapshot,
+                top_k,
+                embedding_provider=embedding_provider,
+                reranker=reranker,
+            )
         )
 
-    task_reports = [
-        task
-        for server in server_reports
-        for task in server["tasks"]
-    ]
+    task_reports = [task for server in server_reports for task in server["tasks"]]
     nontrivial_tasks = [
         task
         for server in server_reports
@@ -138,8 +143,7 @@ def render_markdown(report: dict[str, Any]) -> str:
             ranked = ", ".join(task["retrieved_tools"])
             expected = ", ".join(task["expected_tools"])
             lines.append(
-                f"- **{status}** `{task['query']}`  \n"
-                f"  Expected: `{expected}`; ranked: `{ranked}`"
+                f"- **{status}** `{task['query']}`  \n  Expected: `{expected}`; ranked: `{ranked}`"
             )
         lines.append("")
     return "\n".join(lines)
@@ -150,15 +154,14 @@ def _evaluate_server(
     snapshot: McpServerSnapshot,
     top_k: int,
     embedding_provider: EmbeddingProvider | None = None,
+    reranker: Reranker | None = None,
 ) -> dict[str, Any]:
     router = ToolRouter(
         ToolRegistry(list(snapshot.tools)),
         embedding_provider=embedding_provider,
+        reranker=reranker,
     )
-    raw_by_name = {
-        str(tool.get("name")): tool
-        for tool in snapshot.raw_tools
-    }
+    raw_by_name = {str(tool.get("name")): tool for tool in snapshot.raw_tools}
     all_tokens = estimate_tokens(snapshot.raw_tools)
     task_reports = []
 
@@ -166,16 +169,8 @@ def _evaluate_server(
         results = router.discover(task.query, top_k=top_k)
         retrieved = [result.tool.name for result in results]
         expected = set(task.expected_tools)
-        relevant_ranks = [
-            rank
-            for rank, name in enumerate(retrieved, start=1)
-            if name in expected
-        ]
-        selected_raw = [
-            raw_by_name[name]
-            for name in retrieved
-            if name in raw_by_name
-        ]
+        relevant_ranks = [rank for rank, name in enumerate(retrieved, start=1) if name in expected]
+        selected_raw = [raw_by_name[name] for name in retrieved if name in raw_by_name]
         selected_tokens = estimate_tokens(selected_raw)
         context_saved = 1.0 - (selected_tokens / all_tokens) if all_tokens else 0.0
         task_reports.append(

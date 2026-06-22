@@ -9,7 +9,6 @@ reducing context size and improving routing accuracy.
 from __future__ import annotations
 
 import os
-from typing import Any
 
 from semantic_tool_router import ToolRegistry, ToolRouter, ToolSpec
 
@@ -59,7 +58,7 @@ def run_langchain_agent_with_routing(user_query: str) -> None:
     # 3. Discover relevant tools (retrieve top-2 candidates for the specific task)
     print(f"User Query: {user_query}")
     results = router.discover(user_query, top_k=2)
-    
+
     print("Dynamically selected tools:")
     selected_names = []
     for res in results:
@@ -75,7 +74,9 @@ def run_langchain_agent_with_routing(user_query: str) -> None:
         from langchain_core.tools import tool
         from langchain_openai import ChatOpenAI
     except Exception as err:
-        print(f"\nSkipping LangChain agent execution: LangChain library could not be imported on this Python version ({err}).")
+        print(
+            f"\nSkipping LangChain agent execution: LangChain library could not be imported on this Python version ({err})."
+        )
         print("Note: The semantic tool routing succeeded perfectly above!")
         return
 
@@ -94,7 +95,10 @@ def run_langchain_agent_with_routing(user_query: str) -> None:
     llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
     prompt = ChatPromptTemplate.from_messages(
         [
-            ("system", "You are a helpful assistant with access to a dynamically retrieved subset of tools."),
+            (
+                "system",
+                "You are a helpful assistant with access to a dynamically retrieved subset of tools.",
+            ),
             ("human", "{input}"),
             MessagesPlaceholder(variable_name="agent_scratchpad"),
         ]
@@ -108,4 +112,6 @@ def run_langchain_agent_with_routing(user_query: str) -> None:
 
 
 if __name__ == "__main__":
-    run_langchain_agent_with_routing("Find user orders where status is pending and check their shipping info on the web.")
+    run_langchain_agent_with_routing(
+        "Find user orders where status is pending and check their shipping info on the web."
+    )

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Iterable
 
 from semantic_tool_router.router import ToolRouter
 
@@ -12,9 +12,10 @@ class BenchmarkTask:
     expected_tools: tuple[str, ...]
 
     @classmethod
-    def from_dict(cls, data: dict[str, object]) -> "BenchmarkTask":
+    def from_dict(cls, data: dict[str, object]) -> BenchmarkTask:
         query = str(data.get("query", "")).strip()
-        expected = tuple(str(item) for item in data.get("expected_tools", []))
+        expected_tools_raw = data.get("expected_tools", [])
+        expected = tuple(str(item) for item in expected_tools_raw) if isinstance(expected_tools_raw, list) else ()
         if not query:
             raise ValueError("Benchmark task is missing a query")
         if not expected:
@@ -99,9 +100,7 @@ def evaluate(router: ToolRouter, tasks: Iterable[BenchmarkTask], top_k: int) -> 
 
     evaluations = []
     for task in tasks:
-        retrieved = tuple(
-            result.tool.name for result in router.discover(task.query, top_k=top_k)
-        )
+        retrieved = tuple(result.tool.name for result in router.discover(task.query, top_k=top_k))
         expected = set(task.expected_tools)
         relevant = tuple(name for name in retrieved if name in expected)
         reciprocal_rank = next(

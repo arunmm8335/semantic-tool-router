@@ -8,7 +8,12 @@ version = "0.1.0"
 description = "Runtime semantic discovery for agent tools."
 readme = "README.md"
 requires-python = ">=3.10"
-authors = [{ name = "Semantic Tool Router Contributors" }]
+authors = [
+  { name = "Arun M", email = "arunmyageri26@gmail.com" },
+]
+maintainers = [
+  { name = "Arun M", email = "arunmyageri26@gmail.com" },
+]
 license = { text = "MIT" }
 keywords = ["agents", "tools", "retrieval", "mcp", "semantic-search"]
 classifiers = [
@@ -30,3 +35,41 @@ semantic-tool-router = "semantic_tool_router.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+
+[project.urls]
+Homepage = "https://github.com/arunmm8335/semantic-tool-router"
+Issues = "https://github.com/arunmm8335/semantic-tool-router/issues"
+Changelog = "https://github.com/arunmm8335/semantic-tool-router/blob/main/CHANGELOG.md"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["build", "dist", "src/semantic_tool_router.egg-info"]
+
+[tool.ruff.lint]
+select = [
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "UP",  # pyupgrade
+]
+ignore = [
+  "E501",  # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011"]  # assert False is fine in tests
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_unreachable = true
+warn_unused_ignores = true
+disallow_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+check_untyped_defs = true
+ignore_missing_imports = true   # openai / sentence_transformers are optional
+files = ["src/semantic_tool_router"]

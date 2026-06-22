@@ -8,7 +8,6 @@ instantiating them as LlamaIndex FunctionTools, and passing them to an agent.
 from __future__ import annotations
 
 import os
-from typing import Any
 
 from semantic_tool_router import ToolRegistry, ToolRouter, ToolSpec
 
@@ -70,15 +69,23 @@ def run_llamaindex_agent_with_routing(user_query: str) -> None:
         from llama_index.core.tools import FunctionTool
         from llama_index.llms.openai import OpenAI
     except Exception as err:
-        print(f"\nSkipping LlamaIndex agent execution: LlamaIndex library could not be imported ({err}).")
+        print(
+            f"\nSkipping LlamaIndex agent execution: LlamaIndex library could not be imported ({err})."
+        )
         print("Note: The semantic tool routing succeeded perfectly above!")
         return
 
     # Map selected names to actual function calls
     tool_functions = {
-        "search_local_files": (search_local_files, "Search for keyword patterns inside local files recursively."),
+        "search_local_files": (
+            search_local_files,
+            "Search for keyword patterns inside local files recursively.",
+        ),
         "get_git_diff": (get_git_diff, "Retrieve the diff content for a specific git commit hash."),
-        "send_slack_notification": (send_slack_notification, "Send an alert or status update message to a Slack channel."),
+        "send_slack_notification": (
+            send_slack_notification,
+            "Send an alert or status update message to a Slack channel.",
+        ),
     }
 
     selected_tools = []
@@ -97,11 +104,7 @@ def run_llamaindex_agent_with_routing(user_query: str) -> None:
         return
 
     llm = OpenAI(model="gpt-4o-mini")
-    agent = FunctionCallingAgentWorker.from_tools(
-        selected_tools,
-        llm=llm,
-        verbose=True
-    ).as_agent()
+    agent = FunctionCallingAgentWorker.from_tools(selected_tools, llm=llm, verbose=True).as_agent()
 
     print("Executing LlamaIndex agent...")
     response = agent.chat(user_query)
@@ -109,4 +112,6 @@ def run_llamaindex_agent_with_routing(user_query: str) -> None:
 
 
 if __name__ == "__main__":
-    run_llamaindex_agent_with_routing("Inspect the changes introduced by git commit abc123def and search for the updated keywords.")
+    run_llamaindex_agent_with_routing(
+        "Inspect the changes introduced by git commit abc123def and search for the updated keywords."
+    )

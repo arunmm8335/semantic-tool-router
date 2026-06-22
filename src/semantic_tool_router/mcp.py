@@ -10,7 +10,6 @@ from typing import Any
 
 from semantic_tool_router.models import ToolSpec
 
-
 PROTOCOL_VERSION = "2025-11-25"
 
 
@@ -37,7 +36,7 @@ class StdioMcpClient:
         self._stderr_lines: list[str] = []
         self._request_id = 0
 
-    def __enter__(self) -> "StdioMcpClient":
+    def __enter__(self) -> StdioMcpClient:
         command = list(self.command)
         if os.name == "nt" and command[0].lower() in {"npx", "npm"}:
             command[0] += ".cmd"
