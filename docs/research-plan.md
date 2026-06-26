@@ -17,10 +17,10 @@ python -m semantic_tool_router benchmark --registry examples/tools.json --tasks 
 ## Next Experiments
 
 1. Compare retrieval inputs: description only, description plus examples, description plus schema, and all metadata.
-2. Compare retrievers: keyword BM25, local hashing embeddings, sentence-transformer embeddings, hosted embeddings, and LLM reranking.
+2. ~~Compare retrievers: keyword BM25, local hashing embeddings, sentence-transformer embeddings, hosted embeddings, and LLM reranking.~~ **Done** — see [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
 3. Measure context savings: tokens for all tools versus tokens for retrieved tools.
 4. Add safety scoring: penalize tools with network, write, execute, or destructive permissions unless the task clearly needs them.
-5. Build MCP import: convert MCP tool schemas into registry entries automatically.
+5. ~~Build MCP import: convert MCP tool schemas into registry entries automatically.~~ **Done** — `mcp-discover` and `mcp-benchmark`.
 
 ## Live Scenario
 
@@ -53,6 +53,22 @@ These results establish a baseline rather than a performance claim. The
 failures identify the next experiment directly: compare lexical hashing with
 a sentence embedding model and a lightweight reranker on the same frozen
 tasks.
+
+## Retriever Comparison (June 26, 2026)
+
+On the same frozen live MCP suite (15 tasks, top-k=3):
+
+| Config | Hit rate@3 | Top-1 | MRR |
+| --- | ---: | ---: | ---: |
+| Hashing | 73.3% | 40.0% | 0.556 |
+| MiniLM (sentence-transformers) | 86.7% | 66.7% | 0.744 |
+| Hashing + cross-encoder | 93.3% | 80.0% | 0.856 |
+| MiniLM + cross-encoder | 93.3% | 80.0% | 0.856 |
+
+Full tables and reproduction commands: [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
+
+The JSON fixture suite (12 tools) saturates at 100% for all retrievers — expand
+it or rely on the live MCP suite for meaningful ranking differences.
 
 ## Metrics
 

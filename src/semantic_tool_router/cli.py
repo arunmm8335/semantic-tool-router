@@ -4,6 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
+from semantic_tool_router.comparison import (
+    comparison_payload,
+    render_comparison_markdown,
+    run_fixture_comparison,
+    run_live_comparison,
+)
 from semantic_tool_router.embeddings import (
     EmbeddingProvider,
     HashingEmbeddingProvider,
@@ -134,6 +140,54 @@ def main(argv: list[str] | None = None) -> int:
     add_embedder_args(live_parser)
     add_reranker_args(live_parser)
 
+    inspect_parser = subparsers.add_parser(
+        "mcp-inspect",
+        help="List the tools exposed by a stdio MCP server and optionally execute one",
+    )
+    inspect_parser.add_argument("--timeout", type=float, default=30.0)
+    inspect_parser.add_argument("--tool", help="Execute this tool and print the result")
+    inspect_parser.add_argument("--json", action="store_true", dest="json_output")
+    inspect_parser.add_argument(
+        "--call-arguments",
+        help="JSON object used to execute the --tool selection",
+    )
+    inspect_parser.add_argument(
+        "--call-argument",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Repeatable tool argument; JSON values are decoded when possible",
+    )
+    inspect_parser.add_argument(
+        "--server",
+        required=True,
+        nargs=argparse.REMAINDER,
+        help="MCP server command; place this option after router options",
+    )
+
+    compare_parser = subparsers.add_parser(
+        "compare-retrievers",
+        help="Run frozen retriever comparison across fixture and/or live MCP suites",
+    )
+    compare_parser.add_argument("--registry", default="examples/tools.json")
+    compare_parser.add_argument("--tasks", default="benchmarks/tasks.json")
+    compare_parser.add_argument("--top-k", type=int, default=3)
+    compare_parser.add_argument("--suite", default="benchmarks/live_mcp_suite.json")
+    compare_parser.add_argument("--workspace", default=".")
+    compare_parser.add_argument("--timeout", type=float, default=60.0)
+    compare_parser.add_argument(
+        "--fixture-only",
+        action="store_true",
+        help="Skip the live MCP suite (no npx or network required)",
+    )
+    compare_parser.add_argument(
+        "--live-only",
+        action="store_true",
+        help="Skip the JSON fixture benchmark",
+    )
+    compare_parser.add_argument("--json-output")
+    compare_parser.add_argument("--markdown-output")
+
     args = parser.parse_args(argv)
 
     if args.command == "discover":
@@ -144,6 +198,10 @@ def main(argv: list[str] | None = None) -> int:
         return _mcp_discover(args)
     if args.command == "mcp-benchmark":
         return _mcp_benchmark(args)
+    if args.command == "mcp-inspect":
+        return _mcp_inspect(args)
+    if args.command == "compare-retrievers":
+        return _compare_retrievers(args)
     return 1
 
 
@@ -340,3 +398,134 @@ def _mcp_benchmark(args: argparse.Namespace) -> int:
         Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
         Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
     return 0
+
+
+def _mcp_inspect(args: argparse.Namespace) -> int:
+    command = list(args.server)
+    if not command:
+        raise SystemExit("mcp-inspect requires a command after --server")
+
+    try:
+        with StdioMcpClient(command, timeout=args.timeout) as client:
+            snapshot = client.snapshot()
+    except (McpError, OSError) as error:
+        print(f"MCP connection failed: {error}")
+        return 2
+
+    call_result: dict[str, object] | None = None
+    if args.tool is not None:
+        if not any(tool.get("name") == args.tool for tool in snapshot.raw_tools):
+            names = ", ".join(str(tool.get("name")) for tool in snapshot.raw_tools)
+            raise McpError(f"Tool {args.tool!r} not found on server; available: {names}")
+        try:
+            arguments = _call_arguments(args)
+        except McpError as error:
+            print(f"Invalid arguments: {error}")
+            return 2
+        try:
+            with StdioMcpClient(command, timeout=args.timeout) as client:
+                call_result = client.call_tool(args.tool, arguments)
+        except (McpError, OSError) as error:
+            print(f"Tool call failed: {error}")
+            return 2
+
+    if args.json_output:
+        payload: dict[str, object] = {
+            "server": {
+                "name": snapshot.name,
+                "version": snapshot.version,
+            },
+            "tools": [
+                {
+                    "name": tool.get("name"),
+                    "description": tool.get("description"),
+                    "inputSchema": tool.get("inputSchema", {}),
+                    "annotations": tool.get("annotations", {}),
+                }
+                for tool in snapshot.raw_tools
+            ],
+            "call_result": call_result,
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+
+    print(f"Server: {snapshot.name} {snapshot.version}")
+    print(f"Tools:  {len(snapshot.raw_tools)}")
+    print()
+    for index, tool in enumerate(snapshot.raw_tools, start=1):
+        name = tool.get("name", "")
+        description = tool.get("description", "")
+        annotations = tool.get("annotations", {})
+        tags = _annotation_tags(annotations)
+        tag_suffix = f" [{', '.join(tags)}]" if tags else ""
+        print(f"{index}. {name}{tag_suffix}")
+        print(f"   {description}")
+        schema = tool.get("inputSchema", {})
+        if isinstance(schema, dict) and schema:
+            print(f"   schema: {json.dumps(schema, sort_keys=True)}")
+    print()
+
+    if call_result is not None:
+        print(f"Executed: {args.tool}")
+        print(_format_call_result(call_result))
+    return 0
+
+
+def _compare_retrievers(args: argparse.Namespace) -> int:
+    if args.fixture_only and args.live_only:
+        raise SystemExit("Use at most one of --fixture-only or --live-only")
+
+    fixture_results = None
+    live_results = None
+
+    if not args.live_only:
+        fixture_results = run_fixture_comparison(
+            args.registry,
+            args.tasks,
+            top_k=args.top_k,
+        )
+
+    if not args.fixture_only:
+        try:
+            live_results = run_live_comparison(
+                args.suite,
+                args.workspace,
+                timeout=args.timeout,
+            )
+        except (OSError, ValueError, json.JSONDecodeError) as error:
+            print(f"Live MCP comparison failed: {error}")
+            return 2
+
+    markdown = render_comparison_markdown(
+        fixture_results,
+        live_results,
+        registry_path=args.registry,
+        tasks_path=args.tasks,
+        suite_path=args.suite,
+    )
+    payload = comparison_payload(fixture_results, live_results)
+
+    print(markdown)
+    if args.json_output:
+        Path(args.json_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.json_output).write_text(
+            json.dumps(payload, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if args.markdown_output:
+        Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
+    return 0
+
+
+def _annotation_tags(annotations: object) -> list[str]:
+    if not isinstance(annotations, dict):
+        return []
+    tags = []
+    if annotations.get("readOnlyHint") is True:
+        tags.append("read-only")
+    elif annotations.get("destructiveHint") is True:
+        tags.append("destructive")
+    if annotations.get("openWorldHint") is True:
+        tags.append("network")
+    return tags

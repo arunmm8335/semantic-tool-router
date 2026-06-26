@@ -8,11 +8,11 @@ By participating, you agree to abide by the [Code of Conduct](CODE_OF_CONDUCT.md
 
 ## Ways to contribute
 
-- **Bug reports** — open an issue using the bug report template.
-- **Feature requests** — open an issue using the feature request template. Explain the use case, not just the implementation.
+- **Bug reports** — open an issue using the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml).
+- **Feature requests** — open an issue using the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml). Explain the use case, not just the implementation.
 - **Documentation** — README, docstrings, examples, and `docs/` improvements are always welcome.
 - **New embedders or rerankers** — see the architecture section below.
-- **Benchmarks** — adding new retrieval tasks or new live MCP servers to the suite.
+- **Benchmarks** — adding new retrieval tasks or new live MCP servers to the suite. See [docs/benchmark-contributing.md](docs/benchmark-contributing.md).
 
 ## Development setup
 

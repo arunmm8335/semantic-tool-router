@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Added `compare-retrievers` CLI and `comparison.py` module to run frozen retriever comparisons across fixture and live MCP suites.
+- Published retriever comparison results in `benchmarks/results/comparison.md` and `comparison.json`.
+- Added GitHub issue templates (bug report, feature request) and a pull request template.
+- Added `docs/benchmark-contributing.md` and `docs/workshop-paper-outline.md`.
+- Updated README with positioning table, real CI badge, and comparison benchmark instructions.
+- Updated `docs/research-plan.md` with retriever comparison results.
 - Added an optional two-stage CrossEncoder reranker. The router now accepts a `Reranker`; when one is provided, the cheap embedding-similarity ranking produces a small candidate pool and the reranker rescores it before the final `top_k` is returned.
 - Wired `--reranker cross-encoder` and `--reranker-model` into all four CLI subcommands.
 - Added `examples/reranker_demo.py` end-to-end walkthrough.
