@@ -149,8 +149,7 @@ def render_comparison_markdown(
         "",
         f"Generated: `{generated}`",
         "",
-        "Frozen-task comparison across embedding and reranking configurations. "
-        "Reproduce with:",
+        "Frozen-task comparison across embedding and reranking configurations. Reproduce with:",
         "",
         "```bash",
         "python -m semantic_tool_router compare-retrievers \\",
