@@ -1,0 +1,936 @@
+{
+  "generated_at": "2026-06-27T17:59:48.621247+00:00",
+  "top_k": 3,
+  "server_count": 4,
+  "task_count": 51,
+  "metrics": {
+    "hit_rate": 0.9803921568627451,
+    "top_1_accuracy": 0.9215686274509803,
+    "mrr": 0.9444444444444444,
+    "mean_context_saved": 0.6465367967111718
+  },
+  "nontrivial_task_count": 46,
+  "nontrivial_metrics": {
+    "hit_rate": 0.9782608695652174,
+    "top_1_accuracy": 0.9130434782608695,
+    "mrr": 0.9384057971014492,
+    "mean_context_saved": 0.7168125354841253
+  },
+  "servers": [
+    {
+      "id": "filesystem",
+      "server_name": "secure-filesystem-server",
+      "server_version": "0.2.0",
+      "available_tools": 14,
+      "metrics": {
+        "hit_rate": 1.0,
+        "top_1_accuracy": 0.8333333333333334,
+        "mrr": 0.9027777777777778,
+        "mean_context_saved": 0.7796314469523499
+      },
+      "tasks": [
+        {
+          "query": "Open the project README and show me its text",
+          "expected_tools": [
+            "read_text_file"
+          ],
+          "retrieved_tools": [
+            "read_text_file",
+            "read_media_file",
+            "directory_tree"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 706,
+          "estimated_context_saved": 0.7690546287209683
+        },
+        {
+          "query": "Show the files and folders directly inside the source directory",
+          "expected_tools": [
+            "list_directory",
+            "list_directory_with_sizes"
+          ],
+          "retrieved_tools": [
+            "list_directory",
+            "list_directory_with_sizes",
+            "directory_tree"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 652,
+          "estimated_context_saved": 0.7867190055610075
+        },
+        {
+          "query": "Find every Python source file under this project recursively",
+          "expected_tools": [
+            "search_files"
+          ],
+          "retrieved_tools": [
+            "search_files",
+            "directory_tree",
+            "list_directory"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 670,
+          "estimated_context_saved": 0.7808308799476611
+        },
+        {
+          "query": "Tell me the size and modification time of pyproject.toml",
+          "expected_tools": [
+            "get_file_info"
+          ],
+          "retrieved_tools": [
+            "edit_file",
+            "list_directory_with_sizes",
+            "get_file_info"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.3333333333333333,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 685,
+          "estimated_context_saved": 0.7759241086032058
+        },
+        {
+          "query": "Give me a tree view of the whole project directory structure",
+          "expected_tools": [
+            "directory_tree"
+          ],
+          "retrieved_tools": [
+            "directory_tree",
+            "list_directory",
+            "list_directory_with_sizes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 652,
+          "estimated_context_saved": 0.7867190055610075
+        },
+        {
+          "query": "Which directories am I allowed to access in this workspace",
+          "expected_tools": [
+            "list_allowed_directories"
+          ],
+          "retrieved_tools": [
+            "list_allowed_directories",
+            "list_directory",
+            "list_directory_with_sizes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 599,
+          "estimated_context_saved": 0.8040562643114164
+        },
+        {
+          "query": "Read README and LICENSE together in one request",
+          "expected_tools": [
+            "read_multiple_files"
+          ],
+          "retrieved_tools": [
+            "read_media_file",
+            "read_multiple_files",
+            "read_text_file"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.5,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 722,
+          "estimated_context_saved": 0.7638207392868825
+        },
+        {
+          "query": "List the source folder contents with each file size shown",
+          "expected_tools": [
+            "list_directory_with_sizes"
+          ],
+          "retrieved_tools": [
+            "list_directory_with_sizes",
+            "list_directory",
+            "get_file_info"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 617,
+          "estimated_context_saved": 0.79816813869807
+        },
+        {
+          "query": "Search this project for every JSON configuration file",
+          "expected_tools": [
+            "search_files"
+          ],
+          "retrieved_tools": [
+            "search_files",
+            "directory_tree",
+            "list_directory"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 670,
+          "estimated_context_saved": 0.7808308799476611
+        },
+        {
+          "query": "Move pyproject.toml into a temporary backup folder",
+          "expected_tools": [
+            "move_file"
+          ],
+          "retrieved_tools": [
+            "move_file",
+            "write_file",
+            "read_multiple_files"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 656,
+          "estimated_context_saved": 0.7854105332024861
+        },
+        {
+          "query": "Update a single line inside the README file",
+          "expected_tools": [
+            "edit_file"
+          ],
+          "retrieved_tools": [
+            "edit_file",
+            "read_text_file",
+            "read_multiple_files"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 784,
+          "estimated_context_saved": 0.7435394177298005
+        },
+        {
+          "query": "Read an image or binary media file from the repository",
+          "expected_tools": [
+            "read_media_file"
+          ],
+          "retrieved_tools": [
+            "read_media_file",
+            "read_text_file",
+            "get_file_info"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 3057,
+          "estimated_selected_tool_tokens": 671,
+          "estimated_context_saved": 0.7805037618580307
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "server_name": "memory-server",
+      "server_version": "0.6.3",
+      "available_tools": 9,
+      "metrics": {
+        "hit_rate": 0.95,
+        "top_1_accuracy": 0.9,
+        "mrr": 0.9166666666666666,
+        "mean_context_saved": 0.6489192495921696
+      },
+      "tasks": [
+        {
+          "query": "Remember Arun as a person who is researching tool discovery",
+          "expected_tools": [
+            "create_entities"
+          ],
+          "retrieved_tools": [
+            "search_nodes",
+            "add_observations",
+            "create_entities"
+          ],
+          "hit": true,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.3333333333333333,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 904,
+          "estimated_context_saved": 0.6313213703099511
+        },
+        {
+          "query": "Connect the semantic router project to the MCP research topic",
+          "expected_tools": [
+            "create_relations"
+          ],
+          "retrieved_tools": [
+            "create_relations",
+            "search_nodes",
+            "open_nodes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 991,
+          "estimated_context_saved": 0.5958401305057096
+        },
+        {
+          "query": "Find anything previously remembered about Arun",
+          "expected_tools": [
+            "search_nodes",
+            "open_nodes"
+          ],
+          "retrieved_tools": [
+            "search_nodes",
+            "read_graph",
+            "open_nodes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 980,
+          "estimated_context_saved": 0.600326264274062
+        },
+        {
+          "query": "Show the complete stored knowledge graph",
+          "expected_tools": [
+            "read_graph"
+          ],
+          "retrieved_tools": [
+            "read_graph",
+            "open_nodes",
+            "search_nodes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 980,
+          "estimated_context_saved": 0.600326264274062
+        },
+        {
+          "query": "Add another fact to an existing person's memory",
+          "expected_tools": [
+            "add_observations"
+          ],
+          "retrieved_tools": [
+            "add_observations",
+            "create_entities",
+            "create_relations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 873,
+          "estimated_context_saved": 0.6439641109298532
+        },
+        {
+          "query": "Link the mentor person to the student they advise in the graph",
+          "expected_tools": [
+            "create_relations"
+          ],
+          "retrieved_tools": [
+            "create_relations",
+            "create_entities",
+            "add_observations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 873,
+          "estimated_context_saved": 0.6439641109298532
+        },
+        {
+          "query": "Record that the benchmark suite depends on the router library",
+          "expected_tools": [
+            "create_relations"
+          ],
+          "retrieved_tools": [
+            "open_nodes",
+            "read_graph",
+            "add_observations"
+          ],
+          "hit": false,
+          "top_1_hit": false,
+          "reciprocal_rank": 0.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 890,
+          "estimated_context_saved": 0.6370309951060359
+        },
+        {
+          "query": "Associate a new research paper with its primary author",
+          "expected_tools": [
+            "create_relations"
+          ],
+          "retrieved_tools": [
+            "create_relations",
+            "add_observations",
+            "create_entities"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 873,
+          "estimated_context_saved": 0.6439641109298532
+        },
+        {
+          "query": "Store a new collaborator who joined the open source project",
+          "expected_tools": [
+            "create_entities"
+          ],
+          "retrieved_tools": [
+            "create_entities",
+            "create_relations",
+            "add_observations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 873,
+          "estimated_context_saved": 0.6439641109298532
+        },
+        {
+          "query": "Search memory for nodes related to semantic retrieval",
+          "expected_tools": [
+            "search_nodes"
+          ],
+          "retrieved_tools": [
+            "search_nodes",
+            "open_nodes",
+            "read_graph"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 980,
+          "estimated_context_saved": 0.600326264274062
+        },
+        {
+          "query": "Open the entity record for a person already stored by name",
+          "expected_tools": [
+            "open_nodes"
+          ],
+          "retrieved_tools": [
+            "open_nodes",
+            "add_observations",
+            "create_entities"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 899,
+          "estimated_context_saved": 0.6333605220228384
+        },
+        {
+          "query": "Remove an outdated note attached to an existing entity",
+          "expected_tools": [
+            "delete_observations"
+          ],
+          "retrieved_tools": [
+            "delete_observations",
+            "delete_entities",
+            "add_observations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 625,
+          "estimated_context_saved": 0.7451060358890702
+        },
+        {
+          "query": "Delete a relationship that is no longer true",
+          "expected_tools": [
+            "delete_relations"
+          ],
+          "retrieved_tools": [
+            "delete_relations",
+            "delete_entities",
+            "delete_observations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 601,
+          "estimated_context_saved": 0.7548939641109298
+        },
+        {
+          "query": "Remove an entity that was added to memory by mistake",
+          "expected_tools": [
+            "delete_entities"
+          ],
+          "retrieved_tools": [
+            "delete_entities",
+            "delete_observations",
+            "delete_relations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 601,
+          "estimated_context_saved": 0.7548939641109298
+        },
+        {
+          "query": "Display the full graph of everything currently in memory",
+          "expected_tools": [
+            "read_graph"
+          ],
+          "retrieved_tools": [
+            "read_graph",
+            "search_nodes",
+            "open_nodes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 980,
+          "estimated_context_saved": 0.600326264274062
+        },
+        {
+          "query": "Create a new project entity for the semantic tool router",
+          "expected_tools": [
+            "create_entities"
+          ],
+          "retrieved_tools": [
+            "create_entities",
+            "create_relations",
+            "add_observations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 873,
+          "estimated_context_saved": 0.6439641109298532
+        },
+        {
+          "query": "Attach a meeting summary observation to an existing team node",
+          "expected_tools": [
+            "add_observations"
+          ],
+          "retrieved_tools": [
+            "add_observations",
+            "create_entities",
+            "open_nodes"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 899,
+          "estimated_context_saved": 0.6333605220228384
+        },
+        {
+          "query": "Look up stored nodes whose name contains benchmark",
+          "expected_tools": [
+            "search_nodes"
+          ],
+          "retrieved_tools": [
+            "search_nodes",
+            "open_nodes",
+            "read_graph"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 980,
+          "estimated_context_saved": 0.600326264274062
+        },
+        {
+          "query": "Drop an incorrect link between two unrelated concepts",
+          "expected_tools": [
+            "delete_relations"
+          ],
+          "retrieved_tools": [
+            "delete_relations",
+            "delete_entities",
+            "create_relations"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 701,
+          "estimated_context_saved": 0.7141109298531811
+        },
+        {
+          "query": "Fetch a specific stored node by its identifier",
+          "expected_tools": [
+            "open_nodes"
+          ],
+          "retrieved_tools": [
+            "open_nodes",
+            "search_nodes",
+            "delete_entities"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 2452,
+          "estimated_selected_tool_tokens": 841,
+          "estimated_context_saved": 0.6570146818923328
+        }
+      ]
+    },
+    {
+      "id": "sequential-thinking",
+      "server_name": "sequential-thinking-server",
+      "server_version": "0.2.0",
+      "available_tools": 1,
+      "metrics": {
+        "hit_rate": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0,
+        "mean_context_saved": 0.0
+      },
+      "tasks": [
+        {
+          "query": "Work through a difficult architecture decision step by step",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        },
+        {
+          "query": "Revise an earlier line of reasoning after discovering a mistake",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        },
+        {
+          "query": "Break down a complex debugging problem into ordered reasoning steps",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        },
+        {
+          "query": "Plan the rollout of a new retrieval feature in stages",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        },
+        {
+          "query": "Compare two router designs using structured sequential analysis",
+          "expected_tools": [
+            "sequentialthinking"
+          ],
+          "retrieved_tools": [
+            "sequentialthinking"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1126,
+          "estimated_selected_tool_tokens": 1126,
+          "estimated_context_saved": 0.0
+        }
+      ]
+    },
+    {
+      "id": "everything",
+      "server_name": "mcp-servers/everything",
+      "server_version": "2.0.0",
+      "available_tools": 13,
+      "metrics": {
+        "hit_rate": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0,
+        "mean_context_saved": 0.7599581626427264
+      },
+      "tasks": [
+        {
+          "query": "Repeat my test message back to me",
+          "expected_tools": [
+            "echo"
+          ],
+          "retrieved_tools": [
+            "echo",
+            "toggle-subscriber-updates",
+            "get-structured-content"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 370,
+          "estimated_context_saved": 0.7742525930445394
+        },
+        {
+          "query": "Add two numbers and return their total",
+          "expected_tools": [
+            "get-sum"
+          ],
+          "retrieved_tools": [
+            "get-sum",
+            "get-resource-links",
+            "echo"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 290,
+          "estimated_context_saved": 0.8230628431970713
+        },
+        {
+          "query": "Return a response containing structured data",
+          "expected_tools": [
+            "get-structured-content"
+          ],
+          "retrieved_tools": [
+            "get-structured-content",
+            "echo",
+            "get-annotated-message"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 449,
+          "estimated_context_saved": 0.726052471018914
+        },
+        {
+          "query": "Start a task that takes a while to finish",
+          "expected_tools": [
+            "trigger-long-running-operation"
+          ],
+          "retrieved_tools": [
+            "trigger-long-running-operation",
+            "simulate-research-query",
+            "toggle-subscriber-updates"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 394,
+          "estimated_context_saved": 0.7596095179987797
+        },
+        {
+          "query": "Read an environment variable from the host process",
+          "expected_tools": [
+            "get-env"
+          ],
+          "retrieved_tools": [
+            "get-env",
+            "get-structured-content",
+            "get-resource-reference"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 408,
+          "estimated_context_saved": 0.7510677242220867
+        },
+        {
+          "query": "Return a message with extra annotation metadata attached",
+          "expected_tools": [
+            "get-annotated-message"
+          ],
+          "retrieved_tools": [
+            "get-annotated-message",
+            "echo",
+            "get-structured-content"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 449,
+          "estimated_context_saved": 0.726052471018914
+        },
+        {
+          "query": "Run a simulated research query against sample data",
+          "expected_tools": [
+            "simulate-research-query"
+          ],
+          "retrieved_tools": [
+            "simulate-research-query",
+            "toggle-subscriber-updates",
+            "trigger-long-running-operation"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 394,
+          "estimated_context_saved": 0.7596095179987797
+        },
+        {
+          "query": "Provide a reference handle to an external resource",
+          "expected_tools": [
+            "get-resource-reference"
+          ],
+          "retrieved_tools": [
+            "get-resource-reference",
+            "get-resource-links",
+            "get-annotated-message"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 383,
+          "estimated_context_saved": 0.7663209273947529
+        },
+        {
+          "query": "List hyperlinks or resource URLs exposed by the server",
+          "expected_tools": [
+            "get-resource-links"
+          ],
+          "retrieved_tools": [
+            "get-resource-links",
+            "get-resource-reference",
+            "get-annotated-message"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 383,
+          "estimated_context_saved": 0.7663209273947529
+        },
+        {
+          "query": "Turn simulated diagnostic logging on or off",
+          "expected_tools": [
+            "toggle-simulated-logging"
+          ],
+          "retrieved_tools": [
+            "toggle-simulated-logging",
+            "toggle-subscriber-updates",
+            "trigger-long-running-operation"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 271,
+          "estimated_context_saved": 0.8346552776082977
+        },
+        {
+          "query": "Compress a file and expose it as a downloadable resource",
+          "expected_tools": [
+            "gzip-file-as-resource"
+          ],
+          "retrieved_tools": [
+            "gzip-file-as-resource",
+            "get-structured-content",
+            "toggle-subscriber-updates"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 553,
+          "estimated_context_saved": 0.6625991458206224
+        },
+        {
+          "query": "Echo back a short diagnostic string for connectivity testing",
+          "expected_tools": [
+            "echo"
+          ],
+          "retrieved_tools": [
+            "echo",
+            "get-env",
+            "get-structured-content"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 370,
+          "estimated_context_saved": 0.7742525930445394
+        },
+        {
+          "query": "Compute the sum of 42 and 58",
+          "expected_tools": [
+            "get-sum"
+          ],
+          "retrieved_tools": [
+            "get-sum",
+            "simulate-research-query",
+            "get-resource-links"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 400,
+          "estimated_context_saved": 0.7559487492373398
+        },
+        {
+          "query": "Kick off a long-running background operation and track it",
+          "expected_tools": [
+            "trigger-long-running-operation"
+          ],
+          "retrieved_tools": [
+            "trigger-long-running-operation",
+            "simulate-research-query",
+            "toggle-subscriber-updates"
+          ],
+          "hit": true,
+          "top_1_hit": true,
+          "reciprocal_rank": 1.0,
+          "estimated_all_tool_tokens": 1639,
+          "estimated_selected_tool_tokens": 394,
+          "estimated_context_saved": 0.7596095179987797
+        }
+      ]
+    }
+  ]
+}

@@ -1,12 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 - 2026-06-27
 
-- Added retrieval input ablation (`ablation` CLI, `SearchIndexMode` on `ToolSpec`).
-- Added downstream agent evaluation (`agent-eval` CLI with `rank1` and `lexical` selectors).
-- Expanded live MCP benchmark from 28 to **51 tasks**.
-- Added BGE-small to retriever comparison (94.1% hit@3 on live suite).
-- Added `examples/end_to_end_demo.ipynb` and `benchmarks/results/ablation.md`.
+- Added `--profile bge` preset (BGE-small, **98.0% hit@3** with MCP tool enrichment on 51 tasks).
+- Added MCP tool enrichment phrases at import for better memory/filesystem routing.
+- Added live MCP agent evaluation: `agent-eval --live --profile bge`.
+- Published on [PyPI](https://pypi.org/project/semantic-tool-router/).
+
+## Unreleased
 
 ## 0.2.0 - 2026-06-27
 

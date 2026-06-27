@@ -5,7 +5,13 @@ import json
 from pathlib import Path
 
 from semantic_tool_router.ablation import render_ablation_markdown, run_input_ablation
-from semantic_tool_router.agent_eval import LexicalSelector, RankOneSelector, evaluate_agent
+from semantic_tool_router.agent_eval import (
+    LexicalSelector,
+    RankOneSelector,
+    evaluate_agent,
+    render_live_agent_markdown,
+    run_live_agent_eval,
+)
 from semantic_tool_router.comparison import (
     comparison_payload,
     render_comparison_markdown,
@@ -56,14 +62,17 @@ def add_reranker_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+BGE_MODEL = "BAAI/bge-small-en-v1.5"
+
+
 def add_profile_arg(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--profile",
-        choices=["fast", "quality"],
+        choices=["fast", "quality", "bge"],
         default="fast",
         help=(
-            "Retriever preset: fast uses hashing (default); quality uses "
-            "all-MiniLM-L6-v2 + cross-encoder reranking"
+            "Retriever preset: fast=hashing+BM25 (default); "
+            "quality=MiniLM+cross-encoder; bge=BGE-small (best live accuracy)"
         ),
     )
 
@@ -89,7 +98,7 @@ def resolve_hybrid_weight(args: argparse.Namespace) -> float:
     explicit = getattr(args, "hybrid_weight", None)
     if explicit is not None:
         return float(explicit)
-    if getattr(args, "profile", "fast") == "quality":
+    if getattr(args, "profile", "fast") in {"quality", "bge"}:
         return 0.0
     if getattr(args, "embedder", "hashing") == "hashing":
         return 0.4
@@ -97,11 +106,17 @@ def resolve_hybrid_weight(args: argparse.Namespace) -> float:
 
 
 def apply_profile(args: argparse.Namespace) -> None:
-    if getattr(args, "profile", "fast") == "quality":
+    profile = getattr(args, "profile", "fast")
+    if profile == "quality":
         args.embedder = "sentence-transformers"
         if args.embedding_model is None:
             args.embedding_model = "all-MiniLM-L6-v2"
         args.reranker = "cross-encoder"
+    elif profile == "bge":
+        args.embedder = "sentence-transformers"
+        if args.embedding_model is None:
+            args.embedding_model = BGE_MODEL
+        args.reranker = "none"
 
 
 def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
@@ -283,6 +298,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Simulated agent policy (default: rank1)",
     )
     agent_parser.add_argument("--json", action="store_true", dest="json_output")
+    agent_parser.add_argument(
+        "--live",
+        action="store_true",
+        help="Evaluate against the live MCP suite instead of JSON fixture tasks",
+    )
+    agent_parser.add_argument("--suite", default="benchmarks/live_mcp_suite.json")
+    agent_parser.add_argument("--workspace", default=".")
+    agent_parser.add_argument("--timeout", type=float, default=60.0)
+    agent_parser.add_argument("--markdown-output")
     add_embedder_args(agent_parser)
     add_reranker_args(agent_parser)
     add_profile_arg(agent_parser)
@@ -601,22 +625,55 @@ def _ablation(args: argparse.Namespace) -> int:
 
 
 def _agent_eval(args: argparse.Namespace) -> int:
-    registry = ToolRegistry.from_file(args.registry)
-    router = _build_router(registry, args)
-    task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
-    tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
     selector = LexicalSelector() if args.selector == "lexical" else RankOneSelector()
-    report = evaluate_agent(
-        router,
-        tasks,
-        top_k=args.top_k,
-        selector=selector,
-        selector_name=args.selector,
-    )
+
+    if args.live:
+        try:
+            top_k, cases = load_live_suite(args.suite, args.workspace)
+            report, task_rows = run_live_agent_eval(
+                cases,
+                top_k=top_k,
+                selector=selector,
+                selector_name=args.selector,
+                timeout=args.timeout,
+                embedding_provider=_build_embedder(args),
+                reranker=_build_reranker(args),
+                hybrid_bm25_weight=resolve_hybrid_weight(args),
+            )
+        except (OSError, ValueError, json.JSONDecodeError, McpError) as error:
+            print(f"Live MCP agent evaluation failed: {error}")
+            return 2
+
+        markdown = render_live_agent_markdown(
+            report,
+            task_rows,
+            suite_path=args.suite,
+            profile=args.profile,
+        )
+        if args.markdown_output:
+            Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
+            Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
+        if not args.json_output:
+            print(markdown)
+    else:
+        registry = ToolRegistry.from_file(args.registry)
+        router = _build_router(registry, args)
+        task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
+        tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
+        report = evaluate_agent(
+            router,
+            tasks,
+            top_k=args.top_k,
+            selector=selector,
+            selector_name=args.selector,
+        )
 
     if args.json_output:
-        print(json.dumps(report.as_dict(), indent=2, sort_keys=True))
-    else:
+        payload: dict[str, object] = report.as_dict()
+        if args.live:
+            payload["task_rows"] = task_rows
+        print(json.dumps(payload, indent=2, sort_keys=True))
+    elif not args.live:
         for item in report.evaluations:
             status = "PASS" if item.end_to_end_success else "FAIL"
             print(f"{status} {item.task.query}")

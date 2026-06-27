@@ -45,6 +45,20 @@ class ProfileTests(unittest.TestCase):
         )
         self.assertEqual(resolve_hybrid_weight(args), 0.25)
 
+    def test_bge_profile(self) -> None:
+        args = argparse.Namespace(
+            profile="bge",
+            embedder="hashing",
+            embedding_model=None,
+            reranker="none",
+            hybrid_weight=None,
+        )
+        apply_profile(args)
+        self.assertEqual(args.embedder, "sentence-transformers")
+        self.assertEqual(args.embedding_model, "BAAI/bge-small-en-v1.5")
+        self.assertEqual(args.reranker, "none")
+        self.assertEqual(resolve_hybrid_weight(args), 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

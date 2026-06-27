@@ -2,11 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Protocol
+from datetime import datetime, timezone
+from typing import Any, Protocol
 
-from semantic_tool_router.embeddings import tokenize
+from semantic_tool_router.embeddings import EmbeddingProvider, tokenize
 from semantic_tool_router.evaluation import BenchmarkTask
+from semantic_tool_router.live_benchmark import LiveServerCase
+from semantic_tool_router.mcp import StdioMcpClient
 from semantic_tool_router.models import DiscoveryResult
+from semantic_tool_router.registry import ToolRegistry
+from semantic_tool_router.reranker import Reranker
 from semantic_tool_router.router import ToolRouter
 
 
@@ -126,3 +131,100 @@ def evaluate_agent(
         selector_name=selector_name,
         top_k=top_k,
     )
+
+
+def run_live_agent_eval(
+    cases: tuple[LiveServerCase, ...],
+    top_k: int,
+    selector: AgentSelector,
+    *,
+    selector_name: str,
+    timeout: float = 60.0,
+    embedding_provider: EmbeddingProvider | None = None,
+    reranker: Reranker | None = None,
+    hybrid_bm25_weight: float = 0.0,
+) -> tuple[AgentEvalReport, list[dict[str, Any]]]:
+    evaluations: list[AgentTaskEvaluation] = []
+    task_rows: list[dict[str, Any]] = []
+
+    for case in cases:
+        with StdioMcpClient(list(case.command), timeout=timeout) as client:
+            snapshot = client.snapshot()
+        router = ToolRouter(
+            ToolRegistry(list(snapshot.tools)),
+            embedding_provider=embedding_provider,
+            reranker=reranker,
+            hybrid_bm25_weight=hybrid_bm25_weight,
+        )
+        for task in case.tasks:
+            benchmark = BenchmarkTask(query=task.query, expected_tools=task.expected_tools)
+            report = evaluate_agent(
+                router,
+                [benchmark],
+                top_k=top_k,
+                selector=selector,
+                selector_name=selector_name,
+            )
+            item = report.evaluations[0]
+            evaluations.append(item)
+            task_rows.append(
+                {
+                    "server": case.identifier,
+                    "query": task.query,
+                    "expected_tools": list(task.expected_tools),
+                    "retrieved_tools": list(item.retrieved_tools),
+                    "selected_tool": item.selected_tool,
+                    "retrieval_hit": item.retrieval_hit,
+                    "agent_success": item.agent_success,
+                    "end_to_end_success": item.end_to_end_success,
+                }
+            )
+
+    return (
+        AgentEvalReport(
+            evaluations=tuple(evaluations),
+            selector_name=selector_name,
+            top_k=top_k,
+        ),
+        task_rows,
+    )
+
+
+def render_live_agent_markdown(
+    report: AgentEvalReport,
+    task_rows: list[dict[str, Any]],
+    *,
+    suite_path: str,
+    profile: str,
+) -> str:
+    generated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    lines = [
+        "# Live MCP Agent Evaluation",
+        "",
+        f"Generated: `{generated}`",
+        "",
+        f"Suite: `{suite_path}`  ",
+        f"Profile: `{profile}`  ",
+        f"Selector: `{report.selector_name}`  ",
+        f"Tasks: {report.task_count} | top-k: {report.top_k}",
+        "",
+        "| Metric | Value |",
+        "| --- | ---: |",
+        f"| Retrieval hit@{report.top_k} | {report.retrieval_hit_rate:.1%} |",
+        f"| Agent success | {report.agent_success_rate:.1%} |",
+        f"| End-to-end success | {report.end_to_end_success_rate:.1%} |",
+        "",
+        "## Task Results",
+        "",
+    ]
+    for row in task_rows:
+        status = "PASS" if row["end_to_end_success"] else "FAIL"
+        expected = ", ".join(row["expected_tools"])
+        retrieved = ", ".join(row["retrieved_tools"])
+        lines.append(
+            f"- **{status}** [{row['server']}] `{row['query']}`  \n"
+            f"  Expected: `{expected}`; retrieved: `{retrieved}`; "
+            f"selected: `{row['selected_tool']}`"
+        )
+    lines.append("")
+    return "\n".join(lines)

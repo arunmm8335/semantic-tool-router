@@ -103,8 +103,9 @@ python -m semantic_tool_router discover "generate a mock logo" \
 
 | Profile | Stack | Best for |
 | --- | --- | --- |
-| `fast` (default) | Hashing embedder | CI, air-gapped, zero-deps |
-| `quality` | MiniLM + cross-encoder | Live MCP and production agents |
+| `fast` (default) | Hashing + BM25 | CI, air-gapped, zero-deps |
+| `quality` | MiniLM + cross-encoder | Balanced production routing |
+| `bge` | BGE-small embeddings | Best live MCP accuracy (94.1% hit@3) |
 
 ### 2. Live MCP Routing
 Connect to a live filesystem MCP server, dynamically retrieve the top-3 candidate tools matching your task, and execute the selected tool with safety parameters:
@@ -170,11 +171,18 @@ python -m semantic_tool_router agent-eval \
   --tasks benchmarks/tasks.json \
   --profile quality \
   --selector rank1
+
+# Live MCP suite (51 tasks)
+python -m semantic_tool_router agent-eval \
+  --live \
+  --suite benchmarks/live_mcp_suite.json \
+  --profile bge \
+  --markdown-output benchmarks/results/agent_eval_live.md
 ```
 
 Use `--fixture-only` for a fast CI-friendly run without MCP servers.
 
-Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — **51 live MCP tasks**: BGE-small **94.1% hit@3**; quality profile **90.2%**; hashing **82.4%**.
+Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — **51 live MCP tasks** with `--profile bge` + tool enrichment: **98.0% hit@3**, **92.2% top-1**.
 
 Research artifacts:
 

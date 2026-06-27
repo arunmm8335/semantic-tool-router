@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from semantic_tool_router.models import ToolSpec
+from semantic_tool_router.tool_enrichment import enrich_tool_spec
 
 PROTOCOL_VERSION = "2025-11-25"
 
@@ -211,13 +212,15 @@ def _tool_spec(tool: dict[str, Any], server_name: str) -> ToolSpec:
     tags = ["mcp", server_name]
     if "deprecated" in str(tool.get("description", "")).lower():
         tags.append("deprecated")
-    return ToolSpec(
-        name=str(tool.get("name", "")),
-        description=str(tool.get("description", "MCP tool")),
-        input_schema=dict(schema) if isinstance(schema, dict) else {},
-        tags=tuple(tags),
-        permissions=tuple(permissions),
-        cost="remote" if "network" in permissions else "local",
+    return enrich_tool_spec(
+        ToolSpec(
+            name=str(tool.get("name", "")),
+            description=str(tool.get("description", "MCP tool")),
+            input_schema=dict(schema) if isinstance(schema, dict) else {},
+            tags=tuple(tags),
+            permissions=tuple(permissions),
+            cost="remote" if "network" in permissions else "local",
+        )
     )
 
 
