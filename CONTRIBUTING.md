@@ -69,6 +69,8 @@ The codebase uses `from __future__ import annotations` and full type hints on al
 ToolRouter
 ├── ToolRegistry        (loads JSON or MCP-imported ToolSpecs)
 ├── EmbeddingProvider   (hashing | sentence-transformers | openai)
+├── Bm25Index           (hybrid lexical fusion, default 40% weight)
+├── scoring             (read-query safety penalties for risky tools)
 └── Reranker            (optional; runs after embedding retrieval)
 ```
 

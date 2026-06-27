@@ -76,6 +76,50 @@ class ToolRouterTests(unittest.TestCase):
 
         self.assertEqual(results[0].tool.name, "read_text_file")
 
+    def test_hybrid_bm25_prefers_lexical_tool_match(self) -> None:
+        registry = ToolRegistry(
+            [
+                ToolSpec(
+                    name="search_files",
+                    description="Recursively find files matching a glob pattern",
+                ),
+                ToolSpec(
+                    name="move_file",
+                    description="Move or rename a file to a new location",
+                ),
+            ]
+        )
+
+        results = ToolRouter(registry, hybrid_bm25_weight=0.6).discover(
+            "find every python source file recursively",
+            top_k=1,
+        )
+
+        self.assertEqual(results[0].tool.name, "search_files")
+
+    def test_safety_penalty_demotes_destructive_tools_on_read_queries(self) -> None:
+        registry = ToolRegistry(
+            [
+                ToolSpec(
+                    name="read_graph",
+                    description="Read the complete knowledge graph",
+                    permissions=("read",),
+                ),
+                ToolSpec(
+                    name="delete_entities",
+                    description="Delete entities from the knowledge graph",
+                    permissions=("write", "destructive"),
+                ),
+            ]
+        )
+
+        results = ToolRouter(registry, safety_penalty_enabled=True).discover(
+            "show the complete stored knowledge graph",
+            top_k=1,
+        )
+
+        self.assertEqual(results[0].tool.name, "read_graph")
+
 
 if __name__ == "__main__":
     unittest.main()

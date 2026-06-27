@@ -25,6 +25,18 @@
         {
           "query": "Tell me the size and modification time of pyproject.toml",
           "expected_tools": ["get_file_info"]
+        },
+        {
+          "query": "Give me a tree view of the whole project directory structure",
+          "expected_tools": ["directory_tree"]
+        },
+        {
+          "query": "Which directories am I allowed to access in this workspace",
+          "expected_tools": ["list_allowed_directories"]
+        },
+        {
+          "query": "Read README and LICENSE together in one request",
+          "expected_tools": ["read_multiple_files"]
         }
       ]
     },
@@ -55,6 +67,46 @@
         {
           "query": "Add another fact to an existing person's memory",
           "expected_tools": ["add_observations"]
+        },
+        {
+          "query": "Link the mentor person to the student they advise in the graph",
+          "expected_tools": ["create_relations"]
+        },
+        {
+          "query": "Record that the benchmark suite depends on the router library",
+          "expected_tools": ["create_relations"]
+        },
+        {
+          "query": "Associate a new research paper with its primary author",
+          "expected_tools": ["create_relations"]
+        },
+        {
+          "query": "Store a new collaborator who joined the open source project",
+          "expected_tools": ["create_entities"]
+        },
+        {
+          "query": "Search memory for nodes related to semantic retrieval",
+          "expected_tools": ["search_nodes"]
+        },
+        {
+          "query": "Open the entity record for a person already stored by name",
+          "expected_tools": ["open_nodes"]
+        },
+        {
+          "query": "Remove an outdated note attached to an existing entity",
+          "expected_tools": ["delete_observations"]
+        },
+        {
+          "query": "Delete a relationship that is no longer true",
+          "expected_tools": ["delete_relations"]
+        },
+        {
+          "query": "Remove an entity that was added to memory by mistake",
+          "expected_tools": ["delete_entities"]
+        },
+        {
+          "query": "Display the full graph of everything currently in memory",
+          "expected_tools": ["read_graph"]
         }
       ]
     },

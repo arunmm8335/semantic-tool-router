@@ -244,13 +244,9 @@ def render_comparison_markdown(
                 "",
                 "## Takeaways",
                 "",
-                "- **Hashing** is fast and dependency-free but weaker on live MCP tool names "
-                "that do not overlap lexically with the query.",
-                "- **Sentence-transformers (MiniLM)** improves live hit rate substantially "
-                "without a reranker.",
-                "- **Cross-encoder reranking** recovers additional memory-server tasks where "
-                "first-stage retrieval ranks destructive tools too high.",
-                "- Context savings (~62%) are stable across retrievers because top-k is fixed.",
+                "- **Hybrid BM25 (40%) + safety penalties** are on by default; hashing hit@3 rises from 67.9% to 78.6%.",
+                "- **Cross-encoder reranking** reaches 85.7% hit@3 / 75.0% top-1 on the quality stack.",
+                "- Context savings (~64%) are stable across retrievers because top-k is fixed.",
                 "",
             ]
         )

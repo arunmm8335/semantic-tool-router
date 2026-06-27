@@ -54,6 +54,41 @@ def add_reranker_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def add_profile_arg(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--profile",
+        choices=["fast", "quality"],
+        default="fast",
+        help=(
+            "Retriever preset: fast uses hashing (default); quality uses "
+            "all-MiniLM-L6-v2 + cross-encoder reranking"
+        ),
+    )
+
+
+def add_retrieval_args(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--hybrid-weight",
+        type=float,
+        default=0.4,
+        help="BM25 fusion weight in [0, 1]; 0 disables lexical hybrid (default: 0.4)",
+    )
+    parser.add_argument(
+        "--no-safety-penalty",
+        action="store_true",
+        help="Disable read-query penalties for destructive or write-only tools",
+    )
+
+
+def apply_profile(args: argparse.Namespace) -> None:
+    if getattr(args, "profile", "fast") != "quality":
+        return
+    args.embedder = "sentence-transformers"
+    if args.embedding_model is None:
+        args.embedding_model = "all-MiniLM-L6-v2"
+    args.reranker = "cross-encoder"
+
+
 def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
     if args.embedder == "sentence-transformers":
         model_name = args.embedding_model or "all-MiniLM-L6-v2"
@@ -72,6 +107,19 @@ def _build_reranker(args: argparse.Namespace) -> Reranker | None:
     return None
 
 
+def _build_router(
+    registry: ToolRegistry,
+    args: argparse.Namespace,
+) -> ToolRouter:
+    return ToolRouter(
+        registry,
+        embedding_provider=_build_embedder(args),
+        reranker=_build_reranker(args),
+        hybrid_bm25_weight=float(getattr(args, "hybrid_weight", 0.4)),
+        safety_penalty_enabled=not getattr(args, "no_safety_penalty", False),
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="semantic-tool-router")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -84,6 +132,8 @@ def main(argv: list[str] | None = None) -> int:
     discover_parser.add_argument("--allow-permission", action="append")
     add_embedder_args(discover_parser)
     add_reranker_args(discover_parser)
+    add_profile_arg(discover_parser)
+    add_retrieval_args(discover_parser)
 
     benchmark_parser = subparsers.add_parser(
         "benchmark", help="Evaluate retrieval on task fixtures"
@@ -94,6 +144,8 @@ def main(argv: list[str] | None = None) -> int:
     benchmark_parser.add_argument("--json", action="store_true", dest="json_output")
     add_embedder_args(benchmark_parser)
     add_reranker_args(benchmark_parser)
+    add_profile_arg(benchmark_parser)
+    add_retrieval_args(benchmark_parser)
 
     mcp_parser = subparsers.add_parser(
         "mcp-discover",
@@ -121,6 +173,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     add_embedder_args(mcp_parser)
     add_reranker_args(mcp_parser)
+    add_profile_arg(mcp_parser)
+    add_retrieval_args(mcp_parser)
     mcp_parser.add_argument(
         "--server",
         required=True,
@@ -139,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
     live_parser.add_argument("--markdown-output")
     add_embedder_args(live_parser)
     add_reranker_args(live_parser)
+    add_profile_arg(live_parser)
+    add_retrieval_args(live_parser)
 
     inspect_parser = subparsers.add_parser(
         "mcp-inspect",
@@ -190,6 +246,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
 
+    if args.command in {"discover", "benchmark", "mcp-discover", "mcp-benchmark"}:
+        apply_profile(args)
+
     if args.command == "discover":
         return _discover(args)
     if args.command == "benchmark":
@@ -207,9 +266,7 @@ def main(argv: list[str] | None = None) -> int:
 
 def _discover(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
-    embedder = _build_embedder(args)
-    reranker = _build_reranker(args)
-    router = ToolRouter(registry, embedding_provider=embedder, reranker=reranker)
+    router = _build_router(registry, args)
     allow_permissions = set(args.allow_permission) if args.allow_permission is not None else None
     results = router.discover(
         args.query,
@@ -228,9 +285,7 @@ def _discover(args: argparse.Namespace) -> int:
 
 def _benchmark(args: argparse.Namespace) -> int:
     registry = ToolRegistry.from_file(args.registry)
-    embedder = _build_embedder(args)
-    reranker = _build_reranker(args)
-    router = ToolRouter(registry, embedding_provider=embedder, reranker=reranker)
+    router = _build_router(registry, args)
     task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
     tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
     report = evaluate(router, tasks, top_k=args.top_k)
@@ -268,7 +323,14 @@ def _mcp_discover(args: argparse.Namespace) -> int:
             )
             embedder = _build_embedder(args)
             reranker = _build_reranker(args)
-            results = ToolRouter(registry, embedding_provider=embedder, reranker=reranker).discover(
+            router = ToolRouter(
+                registry,
+                embedding_provider=embedder,
+                reranker=reranker,
+                hybrid_bm25_weight=float(args.hybrid_weight),
+                safety_penalty_enabled=not args.no_safety_penalty,
+            )
+            results = router.discover(
                 args.query,
                 top_k=args.top_k,
                 allow_permissions=allow_permissions,

@@ -48,6 +48,8 @@ graph LR
 *   🏷️ **Metadata-Aware Filtering:** Apply rigid tag filters or restrict tools based on security permissions (`read`, `write`, `execute`, `destructive`, `network`).
 *   📈 **Evaluation Suite:** Measure retrieval metrics (`hit_rate@k`, `top_1_accuracy`, `MRR`, `context_tokens_saved`) against reproducible benchmark files.
 *   🧠 **Swappable Embedders:** Easily swap the hashing provider for local Hugging Face `SentenceTransformers` or cloud APIs (`OpenAI`).
+*   🔀 **Hybrid BM25 + embeddings:** Fuses lexical and semantic scores (default 40% BM25) for tool names that do not overlap with the query.
+*   🛡️ **Read-query safety penalties:** Demotes destructive and write-only tools when the task looks read-only.
 
 ---
 
@@ -80,14 +82,28 @@ Query a local JSON registry of tool specs:
 python -m semantic_tool_router discover "read the project README file" --registry examples/tools.json
 ```
 
-Or choose a specific embedding model:
+For production-quality routing, use the **`quality` profile** (MiniLM embeddings + cross-encoder reranking):
+
+```bash
+python -m semantic_tool_router discover "generate a mock logo" \
+  --registry examples/tools.json \
+  --profile quality
+```
+
+Or configure embedders manually:
 
 ```bash
 python -m semantic_tool_router discover "generate a mock logo" \
   --registry examples/tools.json \
   --embedder sentence-transformers \
-  --embedding-model all-MiniLM-L6-v2
+  --embedding-model all-MiniLM-L6-v2 \
+  --reranker cross-encoder
 ```
+
+| Profile | Stack | Best for |
+| --- | --- | --- |
+| `fast` (default) | Hashing embedder | CI, air-gapped, zero-deps |
+| `quality` | MiniLM + cross-encoder | Live MCP and production agents |
 
 ### 2. Live MCP Routing
 Connect to a live filesystem MCP server, dynamically retrieve the top-3 candidate tools matching your task, and execute the selected tool with safety parameters:
@@ -96,6 +112,7 @@ Connect to a live filesystem MCP server, dynamically retrieve the top-3 candidat
 python -m semantic_tool_router mcp-discover \
   "read the first lines of the project README" \
   --top-k 3 \
+  --profile quality \
   --allow-permission read \
   --expect-tool read_text_file \
   --call-argument "path=README.md" \
@@ -137,7 +154,7 @@ python -m semantic_tool_router compare-retrievers \
 
 Use `--fixture-only` for a fast CI-friendly run without MCP servers.
 
-Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — on live MCP tasks, hashing reaches **73% hit@3**; MiniLM reaches **87%**; cross-encoder reranking reaches **93%**.
+Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — on **28 live MCP tasks** with hybrid BM25 + safety penalties, quality profile reaches **85.7% hit@3** and **75.0% top-1**; hashing improves to **78.6% hit@3** (from 67.9% without hybrid).
 
 To run the reproducible baseline benchmark suite across four official live MCP reference servers (Filesystem, Memory, Sequential Thinking, and Everything):
 

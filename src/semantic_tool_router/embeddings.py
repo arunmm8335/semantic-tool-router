@@ -40,6 +40,10 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
     return sum(a * b for a, b in zip(left, right, strict=False))
 
 
+def tokenize(text: str) -> list[str]:
+    return _tokens(text)
+
+
 def _tokens(text: str) -> list[str]:
     base = [match.group(0).lower() for match in TOKEN_RE.finditer(text)]
     expanded: list[str] = []

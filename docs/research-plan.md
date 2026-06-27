@@ -19,7 +19,7 @@ python -m semantic_tool_router benchmark --registry examples/tools.json --tasks 
 1. Compare retrieval inputs: description only, description plus examples, description plus schema, and all metadata.
 2. ~~Compare retrievers: keyword BM25, local hashing embeddings, sentence-transformer embeddings, hosted embeddings, and LLM reranking.~~ **Done** — see [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
 3. Measure context savings: tokens for all tools versus tokens for retrieved tools.
-4. Add safety scoring: penalize tools with network, write, execute, or destructive permissions unless the task clearly needs them.
+4. ~~Add safety scoring: penalize tools with network, write, execute, or destructive permissions unless the task clearly needs them.~~ **Done** — read-query safety penalties in `scoring.py` (default on).
 5. ~~Build MCP import: convert MCP tool schemas into registry entries automatically.~~ **Done** — `mcp-discover` and `mcp-benchmark`.
 
 ## Live Scenario
@@ -56,7 +56,7 @@ tasks.
 
 ## Retriever Comparison (June 26, 2026)
 
-On the same frozen live MCP suite (15 tasks, top-k=3):
+On the frozen live MCP suite (15 tasks, top-k=3):
 
 | Config | Hit rate@3 | Top-1 | MRR |
 | --- | ---: | ---: | ---: |
@@ -64,6 +64,36 @@ On the same frozen live MCP suite (15 tasks, top-k=3):
 | MiniLM (sentence-transformers) | 86.7% | 66.7% | 0.744 |
 | Hashing + cross-encoder | 93.3% | 80.0% | 0.856 |
 | MiniLM + cross-encoder | 93.3% | 80.0% | 0.856 |
+
+## Expanded Live Suite (June 27, 2026)
+
+The live MCP suite grew from 15 to **28 tasks** (10 new memory tasks, 3 filesystem).
+On the expanded suite (top-k=3):
+
+| Config | Hit rate@3 | Top-1 | MRR |
+| --- | ---: | ---: | ---: |
+| Hashing | 67.9% | 39.3% | 0.530 |
+| MiniLM | 85.7% | 64.3% | 0.732 |
+| Hashing + cross-encoder | 85.7% | 75.0% | 0.792 |
+| MiniLM + cross-encoder | 85.7% | 75.0% | 0.792 |
+
+The expanded suite surfaces harder memory-server cases (`create_relations`,
+`delete_entities`) that cap hit rate below the smaller suite's 93%. Cross-encoder
+reranking still improves top-1 accuracy by ~11 points over MiniLM alone.
+
+## Hybrid BM25 + Safety Penalties (June 27, 2026)
+
+All routers now fuse **40% BM25 + 60% embeddings** and apply read-query penalties
+for destructive/write-only tools by default:
+
+| Config | Hit rate@3 | Top-1 | MRR |
+| --- | ---: | ---: | ---: |
+| Hashing | 78.6% | 46.4% | 0.601 |
+| MiniLM | 82.1% | 60.7% | 0.696 |
+| Hashing + cross-encoder | 85.7% | 75.0% | 0.792 |
+| MiniLM + cross-encoder | 85.7% | 75.0% | 0.792 |
+
+Hashing hit@3 rises **+10.7 points** vs the expanded-suite embedding-only baseline.
 
 Full tables and reproduction commands: [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
 

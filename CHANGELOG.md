@@ -2,7 +2,14 @@
 
 ## Unreleased
 
-- Added `compare-retrievers` CLI and `comparison.py` module to run frozen retriever comparisons across fixture and live MCP suites.
+- Added hybrid BM25 + embedding fusion (default 40% BM25 weight) via `bm25.py`.
+- Added read-query safety penalties for destructive/write-only tools via `scoring.py`.
+- Router accepts `hybrid_bm25_weight` and `safety_penalty_enabled`; CLI adds `--hybrid-weight` and `--no-safety-penalty`.
+- Added tests: `test_bm25.py`, `test_scoring.py`, and router hybrid/safety cases.
+- Re-ran live MCP comparison with hybrid+safety defaults; updated benchmark results.
+- Added `--profile quality` CLI preset (MiniLM + cross-encoder) for production routing.
+- Re-ran retriever comparison on expanded suite; updated `benchmarks/results/comparison.md`.
+- Added `tests/test_cli.py` for profile preset behavior.
 - Published retriever comparison results in `benchmarks/results/comparison.md` and `comparison.json`.
 - Added GitHub issue templates (bug report, feature request) and a pull request template.
 - Added `docs/benchmark-contributing.md` and `docs/workshop-paper-outline.md`.
