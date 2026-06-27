@@ -7,7 +7,7 @@ import re
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol, cast
 
 from semantic_tool_router.models import DiscoveryResult
 
@@ -248,15 +248,21 @@ class _OpenAIChatClient:
             ) from error
 
         client = openai.OpenAI(api_key=self.api_key, base_url=self.base_url)
-        kwargs: dict[str, object] = {
-            "model": model,
-            "messages": messages,
-            "temperature": self.temperature,
-        }
-        if response_format is not None:
-            kwargs["response_format"] = response_format
+        create = cast(Any, client.chat.completions.create)
         try:
-            response = client.chat.completions.create(**kwargs)  # type: ignore[call-overload]
+            if response_format is not None:
+                response = create(
+                    model=model,
+                    messages=messages,
+                    temperature=self.temperature,
+                    response_format=response_format,
+                )
+            else:
+                response = create(
+                    model=model,
+                    messages=messages,
+                    temperature=self.temperature,
+                )
         except Exception as error:
             endpoint = self.base_url or "https://api.openai.com/v1"
             raise RuntimeError(
