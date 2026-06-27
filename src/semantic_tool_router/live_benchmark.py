@@ -17,6 +17,8 @@ from semantic_tool_router.router import ToolRouter
 class LiveTask:
     query: str
     expected_tools: tuple[str, ...]
+    execute_arguments: dict[str, Any] | None = None
+    execute: bool = True
 
 
 @dataclass(frozen=True)
@@ -44,6 +46,12 @@ def load_live_suite(
             LiveTask(
                 query=str(task["query"]),
                 expected_tools=tuple(str(name) for name in task["expected_tools"]),
+                execute_arguments=(
+                    dict(task["execute_arguments"])
+                    if isinstance(task.get("execute_arguments"), dict)
+                    else None
+                ),
+                execute=bool(task.get("execute", True)),
             )
             for task in server["tasks"]
         )

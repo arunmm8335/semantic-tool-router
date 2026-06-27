@@ -71,6 +71,19 @@ python -m semantic_tool_router compare-retrievers --fixture-only
 python -m semantic_tool_router mcp-benchmark \
   --suite benchmarks/live_mcp_suite.json \
   --workspace .
+
+# Validate expected_tools against live tools/list
+python -m semantic_tool_router validate-suite \
+  --suite benchmarks/live_mcp_suite.json \
+  --workspace .
+
+# Real MCP execution smoke (6 safe tasks, CI uses benchmarks/live_mcp_ci_smoke.json)
+python -m semantic_tool_router agent-eval \
+  --live \
+  --suite benchmarks/live_mcp_ci_smoke.json \
+  --profile fast \
+  --selector rank1 \
+  --execute
 ```
 
 Include before/after metrics in your pull request when retrieval rankings change.

@@ -1,0 +1,88 @@
+{
+  "top_k": 3,
+  "servers": [
+    {
+      "id": "filesystem",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "{workspace}"
+      ],
+      "tasks": [
+        {
+          "query": "Open the project README and show me its text",
+          "expected_tools": ["read_text_file"],
+          "execute_arguments": {
+            "path": "README.md"
+          }
+        },
+        {
+          "query": "Which directories am I allowed to access in this workspace",
+          "expected_tools": ["list_allowed_directories"],
+          "execute_arguments": {}
+        }
+      ]
+    },
+    {
+      "id": "memory",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "tasks": [
+        {
+          "query": "Show the complete stored knowledge graph",
+          "expected_tools": ["read_graph"],
+          "execute_arguments": {}
+        }
+      ]
+    },
+    {
+      "id": "sequential-thinking",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "tasks": [
+        {
+          "query": "Work through a difficult architecture decision step by step",
+          "expected_tools": ["sequentialthinking"],
+          "execute_arguments": {
+            "thought": "Compare routing designs step by step.",
+            "nextThoughtNeeded": true,
+            "thoughtNumber": 1,
+            "totalThoughts": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "everything",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ],
+      "tasks": [
+        {
+          "query": "Echo back a short diagnostic string for connectivity testing",
+          "expected_tools": ["echo"],
+          "execute_arguments": {
+            "message": "semantic-tool-router smoke test"
+          }
+        },
+        {
+          "query": "Add two numbers and return their total",
+          "expected_tools": ["get-sum"],
+          "execute_arguments": {
+            "a": 2,
+            "b": 3
+          }
+        }
+      ]
+    }
+  ]
+}

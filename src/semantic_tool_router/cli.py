@@ -6,6 +6,7 @@ from pathlib import Path
 
 from semantic_tool_router.ablation import render_ablation_markdown, run_input_ablation
 from semantic_tool_router.agent_eval import (
+    AgentSelector,
     LexicalSelector,
     RankOneSelector,
     evaluate_agent,
@@ -30,10 +31,16 @@ from semantic_tool_router.live_benchmark import (
     render_markdown,
     run_live_suite,
 )
+from semantic_tool_router.llm_selector import LLMSelector, build_llm_selector
 from semantic_tool_router.mcp import McpError, StdioMcpClient, estimate_tokens
 from semantic_tool_router.registry import ToolRegistry
 from semantic_tool_router.reranker import CrossEncoderReranker, Reranker
 from semantic_tool_router.router import ToolRouter
+from semantic_tool_router.suite_validation import (
+    render_validation_markdown,
+    validate_live_suite,
+    write_validation_report,
+)
 
 
 def add_embedder_args(parser: argparse.ArgumentParser) -> None:
@@ -293,9 +300,36 @@ def main(argv: list[str] | None = None) -> int:
     agent_parser.add_argument("--top-k", type=int, default=3)
     agent_parser.add_argument(
         "--selector",
-        choices=["rank1", "lexical"],
+        choices=["rank1", "lexical", "llm"],
         default="rank1",
-        help="Simulated agent policy (default: rank1)",
+        help="Agent policy: rank1, lexical, or llm (OpenAI-compatible chat model)",
+    )
+    agent_parser.add_argument(
+        "--llm-model",
+        default="gpt-4o-mini",
+        help="Chat model for --selector llm (default: gpt-4o-mini)",
+    )
+    agent_parser.add_argument(
+        "--openai-api-key",
+        help="API key for --selector llm (default: OPENAI_API_KEY env var)",
+    )
+    agent_parser.add_argument(
+        "--openai-base-url",
+        help="Base URL for --selector llm (default: OPENAI_BASE_URL env var)",
+    )
+    agent_parser.add_argument(
+        "--llm-cache",
+        help="JSON file to cache LLM tool picks for reproducible reruns",
+    )
+    agent_parser.add_argument(
+        "--llm-verbose",
+        action="store_true",
+        help="Print LLM API errors while running --selector llm",
+    )
+    agent_parser.add_argument(
+        "--skip-llm-probe",
+        action="store_true",
+        help="Skip the startup LLM connectivity check for --selector llm",
     )
     agent_parser.add_argument("--json", action="store_true", dest="json_output")
     agent_parser.add_argument(
@@ -307,10 +341,30 @@ def main(argv: list[str] | None = None) -> int:
     agent_parser.add_argument("--workspace", default=".")
     agent_parser.add_argument("--timeout", type=float, default=60.0)
     agent_parser.add_argument("--markdown-output")
+    agent_parser.add_argument(
+        "--execute",
+        action="store_true",
+        help="After selection, call the chosen MCP tool via tools/call (requires --live)",
+    )
+    agent_parser.add_argument(
+        "--execute-destructive",
+        action="store_true",
+        help="Allow tools/call for tools marked destructiveHint (default: skip)",
+    )
     add_embedder_args(agent_parser)
     add_reranker_args(agent_parser)
     add_profile_arg(agent_parser)
     add_retrieval_args(agent_parser)
+
+    validate_parser = subparsers.add_parser(
+        "validate-suite",
+        help="Verify live MCP suite expected_tools against tools/list",
+    )
+    validate_parser.add_argument("--suite", default="benchmarks/live_mcp_suite.json")
+    validate_parser.add_argument("--workspace", default=".")
+    validate_parser.add_argument("--timeout", type=float, default=60.0)
+    validate_parser.add_argument("--json-output")
+    validate_parser.add_argument("--markdown-output")
 
     args = parser.parse_args(argv)
 
@@ -339,6 +393,8 @@ def main(argv: list[str] | None = None) -> int:
         return _ablation(args)
     if args.command == "agent-eval":
         return _agent_eval(args)
+    if args.command == "validate-suite":
+        return _validate_suite(args)
     return 1
 
 
@@ -624,8 +680,34 @@ def _ablation(args: argparse.Namespace) -> int:
     return 0
 
 
+def _build_agent_selector(args: argparse.Namespace) -> tuple[AgentSelector, str]:
+    if args.selector == "lexical":
+        return LexicalSelector(), "lexical"
+    if args.selector == "llm":
+        selector = build_llm_selector(
+            model=args.llm_model,
+            api_key=args.openai_api_key,
+            base_url=args.openai_base_url,
+            cache_path=args.llm_cache,
+            verbose=args.llm_verbose,
+            verify=not args.skip_llm_probe,
+        )
+        return selector, f"llm:{args.llm_model}"
+    return RankOneSelector(), "rank1"
+
+
 def _agent_eval(args: argparse.Namespace) -> int:
-    selector = LexicalSelector() if args.selector == "lexical" else RankOneSelector()
+    if args.execute and not args.live:
+        print("agent-eval --execute requires --live (MCP tools/call needs a running server)")
+        return 2
+
+    try:
+        selector, selector_name = _build_agent_selector(args)
+    except (ImportError, ValueError, RuntimeError) as error:
+        print(f"Agent selector setup failed: {error}")
+        return 2
+
+    task_rows: list[dict[str, object]] = []
 
     if args.live:
         try:
@@ -634,11 +716,14 @@ def _agent_eval(args: argparse.Namespace) -> int:
                 cases,
                 top_k=top_k,
                 selector=selector,
-                selector_name=args.selector,
+                selector_name=selector_name,
                 timeout=args.timeout,
                 embedding_provider=_build_embedder(args),
                 reranker=_build_reranker(args),
                 hybrid_bm25_weight=resolve_hybrid_weight(args),
+                execute_tools=args.execute,
+                workspace=args.workspace,
+                skip_destructive_execution=not args.execute_destructive,
             )
         except (OSError, ValueError, json.JSONDecodeError, McpError) as error:
             print(f"Live MCP agent evaluation failed: {error}")
@@ -665,7 +750,7 @@ def _agent_eval(args: argparse.Namespace) -> int:
             tasks,
             top_k=args.top_k,
             selector=selector,
-            selector_name=args.selector,
+            selector_name=selector_name,
         )
 
     if args.json_output:
@@ -685,8 +770,39 @@ def _agent_eval(args: argparse.Namespace) -> int:
         print(f"retrieval hit rate@{args.top_k}:  {report.retrieval_hit_rate:.2%}")
         print(f"agent success rate:       {report.agent_success_rate:.2%}")
         print(f"end-to-end success rate:  {report.end_to_end_success_rate:.2%}")
+        if report.execute_tools:
+            print(f"execution success rate:   {report.execution_success_rate:.2%}")
+            print(f"end-to-end + execute:   {report.end_to_end_execute_success_rate:.2%}")
+        if isinstance(selector, LLMSelector) and selector.error_count:
+            print()
+            print(f"LLM errors:               {selector.error_count}")
+            if selector.last_error:
+                print(f"First LLM error:          {selector.last_error}")
 
-    return 0 if report.end_to_end_success_rate == 1.0 else 1
+    success_rate = (
+        report.end_to_end_execute_success_rate
+        if report.execute_tools
+        else report.end_to_end_success_rate
+    )
+    return 0 if success_rate == 1.0 else 1
+
+
+def _validate_suite(args: argparse.Namespace) -> int:
+    try:
+        report = validate_live_suite(args.suite, args.workspace, timeout=args.timeout)
+    except (OSError, ValueError, json.JSONDecodeError, McpError) as error:
+        print(f"Suite validation failed: {error}")
+        return 2
+
+    markdown = render_validation_markdown(report)
+    if args.json_output:
+        write_validation_report(report, args.json_output)
+    if args.markdown_output:
+        Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
+    if not args.json_output:
+        print(markdown)
+    return 0 if report.valid else 1
 
 
 def _compare_retrievers(args: argparse.Namespace) -> int:

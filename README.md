@@ -178,11 +178,24 @@ python -m semantic_tool_router agent-eval \
   --suite benchmarks/live_mcp_suite.json \
   --profile bge \
   --markdown-output benchmarks/results/agent_eval_live.md
+
+# Live MCP with real tools/call after selection
+python -m semantic_tool_router agent-eval \
+  --live \
+  --suite benchmarks/live_mcp_ci_smoke.json \
+  --profile fast \
+  --selector rank1 \
+  --execute
+
+# Validate suite tool names against live MCP servers
+python -m semantic_tool_router validate-suite \
+  --suite benchmarks/live_mcp_suite.json \
+  --workspace .
 ```
 
 Use `--fixture-only` for a fast CI-friendly run without MCP servers.
 
-Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — **51 live MCP tasks** with `--profile bge` + tool enrichment: **98.0% hit@3**, **92.2% top-1**.
+Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — **51 live MCP tasks** with `--profile bge` + tool enrichment: **98.0% hit@3**, **92.2% top-1** (rank1 agent), **98.0% end-to-end** (LLM agent). CI runs a **6-task live MCP smoke** suite with real `tools/call` execution.
 
 Research artifacts:
 

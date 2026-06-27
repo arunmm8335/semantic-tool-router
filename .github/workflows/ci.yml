@@ -35,3 +35,26 @@ jobs:
         run: python -m unittest discover -s tests
       - name: Run retrieval benchmark
         run: semantic-tool-router benchmark --registry examples/tools.json --tasks benchmarks/tasks.json
+
+  live-mcp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install package
+        run: python -m pip install -e .
+      - name: Validate CI smoke suite tool names
+        run: semantic-tool-router validate-suite --suite benchmarks/live_mcp_ci_smoke.json --workspace .
+      - name: Run live MCP retrieval smoke benchmark
+        run: semantic-tool-router mcp-benchmark --suite benchmarks/live_mcp_ci_smoke.json --workspace . --profile fast
+        timeout-minutes: 10
+      - name: Run live MCP execute smoke eval
+        run: semantic-tool-router agent-eval --live --suite benchmarks/live_mcp_ci_smoke.json --workspace . --profile fast --selector rank1 --execute
+        timeout-minutes: 10
