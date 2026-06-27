@@ -1,6 +1,6 @@
 # Retriever Comparison
 
-Generated: `2026-06-27T06:13:42Z`
+Generated: `2026-06-27T09:25:19Z`
 
 Frozen-task comparison across embedding and reranking configurations. Reproduce with:
 
@@ -23,22 +23,22 @@ Nontrivial tasks: 26 (servers with more than one tool)
 | Config | Hit rate@3 | Top-1 | MRR | Context saved |
 | --- | ---: | ---: | ---: | ---: |
 | hashing | 78.6% | 46.4% | 0.601 | 63.0% |
-| sentence-transformers (all-MiniLM-L6-v2) | 82.1% | 60.7% | 0.696 | 64.0% |
+| sentence-transformers (all-MiniLM-L6-v2) | 89.3% | 67.9% | 0.768 | 65.0% |
 | hashing + cross-encoder | 85.7% | 75.0% | 0.792 | 65.5% |
-| sentence-transformers + cross-encoder | 85.7% | 75.0% | 0.792 | 65.3% |
+| sentence-transformers + cross-encoder | 85.7% | 75.0% | 0.792 | 65.4% |
 
 ### Nontrivial tasks only
 
 | Config | Hit rate@3 | Top-1 | MRR |
 | --- | ---: | ---: | ---: |
 | hashing | 76.9% | 42.3% | 0.571 |
-| sentence-transformers (all-MiniLM-L6-v2) | 80.8% | 57.7% | 0.673 |
+| sentence-transformers (all-MiniLM-L6-v2) | 88.5% | 65.4% | 0.750 |
 | hashing + cross-encoder | 84.6% | 73.1% | 0.776 |
 | sentence-transformers + cross-encoder | 84.6% | 73.1% | 0.776 |
 
 ## Takeaways
 
-- **Hybrid BM25 (40%) + safety penalties** are on by default; hashing hit@3 rises from 67.9% to 78.6%.
-- **Cross-encoder reranking** reaches 85.7% hit@3 / 75.0% top-1 on the quality stack.
+- **Per-embedder BM25 tuning**: 40% for hashing, 0% for semantic embedders; MiniLM hit@3 reaches 89.3%.
+- **Cross-encoder reranking** (quality profile) reaches 85.7% hit@3 / 75.0% top-1.
 - Context savings (~64%) are stable across retrievers because top-k is fixed.
 

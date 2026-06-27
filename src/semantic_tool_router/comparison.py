@@ -74,6 +74,10 @@ def _fixture_report_dict(report: BenchmarkReport) -> dict[str, float | int]:
     }
 
 
+def _hybrid_weight_for(config: RetrieverConfig) -> float:
+    return 0.4 if config.embedder == "hashing" else 0.0
+
+
 def run_fixture_comparison(
     registry_path: str | Path,
     tasks_path: str | Path,
@@ -88,7 +92,12 @@ def run_fixture_comparison(
     for config in configs:
         embedder = _build_embedder(config)
         reranker = _build_reranker(config)
-        router = ToolRouter(registry, embedding_provider=embedder, reranker=reranker)
+        router = ToolRouter(
+            registry,
+            embedding_provider=embedder,
+            reranker=reranker,
+            hybrid_bm25_weight=_hybrid_weight_for(config),
+        )
         report = evaluate(router, tasks, top_k=top_k)
         results.append(
             {
@@ -119,6 +128,7 @@ def run_live_comparison(
             timeout=timeout,
             embedding_provider=embedder,
             reranker=reranker,
+            hybrid_bm25_weight=_hybrid_weight_for(config),
         )
         results.append(
             {
@@ -244,8 +254,8 @@ def render_comparison_markdown(
                 "",
                 "## Takeaways",
                 "",
-                "- **Hybrid BM25 (40%) + safety penalties** are on by default; hashing hit@3 rises from 67.9% to 78.6%.",
-                "- **Cross-encoder reranking** reaches 85.7% hit@3 / 75.0% top-1 on the quality stack.",
+                "- **Per-embedder BM25 tuning**: 40% for hashing, 0% for semantic embedders; MiniLM hit@3 reaches 89.3%.",
+                "- **Cross-encoder reranking** (quality profile) reaches 85.7% hit@3 / 75.0% top-1.",
                 "- Context savings (~64%) are stable across retrievers because top-k is fixed.",
                 "",
             ]

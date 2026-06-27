@@ -70,8 +70,11 @@ def add_retrieval_args(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--hybrid-weight",
         type=float,
-        default=0.4,
-        help="BM25 fusion weight in [0, 1]; 0 disables lexical hybrid (default: 0.4)",
+        default=None,
+        help=(
+            "BM25 fusion weight in [0, 1]. Default: 0.4 for --profile fast, "
+            "0.0 for --profile quality"
+        ),
     )
     parser.add_argument(
         "--no-safety-penalty",
@@ -80,13 +83,23 @@ def add_retrieval_args(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def resolve_hybrid_weight(args: argparse.Namespace) -> float:
+    explicit = getattr(args, "hybrid_weight", None)
+    if explicit is not None:
+        return float(explicit)
+    if getattr(args, "profile", "fast") == "quality":
+        return 0.0
+    if getattr(args, "embedder", "hashing") == "hashing":
+        return 0.4
+    return 0.0
+
+
 def apply_profile(args: argparse.Namespace) -> None:
-    if getattr(args, "profile", "fast") != "quality":
-        return
-    args.embedder = "sentence-transformers"
-    if args.embedding_model is None:
-        args.embedding_model = "all-MiniLM-L6-v2"
-    args.reranker = "cross-encoder"
+    if getattr(args, "profile", "fast") == "quality":
+        args.embedder = "sentence-transformers"
+        if args.embedding_model is None:
+            args.embedding_model = "all-MiniLM-L6-v2"
+        args.reranker = "cross-encoder"
 
 
 def _build_embedder(args: argparse.Namespace) -> EmbeddingProvider:
@@ -115,7 +128,7 @@ def _build_router(
         registry,
         embedding_provider=_build_embedder(args),
         reranker=_build_reranker(args),
-        hybrid_bm25_weight=float(getattr(args, "hybrid_weight", 0.4)),
+        hybrid_bm25_weight=resolve_hybrid_weight(args),
         safety_penalty_enabled=not getattr(args, "no_safety_penalty", False),
     )
 
@@ -321,15 +334,7 @@ def _mcp_discover(args: argparse.Namespace) -> int:
             allow_permissions = (
                 set(args.allow_permission) if args.allow_permission is not None else None
             )
-            embedder = _build_embedder(args)
-            reranker = _build_reranker(args)
-            router = ToolRouter(
-                registry,
-                embedding_provider=embedder,
-                reranker=reranker,
-                hybrid_bm25_weight=float(args.hybrid_weight),
-                safety_penalty_enabled=not args.no_safety_penalty,
-            )
+            router = _build_router(registry, args)
             results = router.discover(
                 args.query,
                 top_k=args.top_k,
@@ -443,6 +448,7 @@ def _mcp_benchmark(args: argparse.Namespace) -> int:
             timeout=args.timeout,
             embedding_provider=embedder,
             reranker=reranker,
+            hybrid_bm25_weight=resolve_hybrid_weight(args),
         )
     except (McpError, OSError, ValueError, json.JSONDecodeError) as error:
         print(f"Live MCP benchmark failed: {error}")

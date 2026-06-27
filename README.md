@@ -1,5 +1,6 @@
 # Semantic Tool Router
 
+[![PyPI](https://img.shields.io/pypi/v/semantic-tool-router)](https://pypi.org/project/semantic-tool-router/)
 [![CI](https://github.com/arunmm8335/semantic-tool-router/actions/workflows/ci.yml/badge.svg)](https://github.com/arunmm8335/semantic-tool-router/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](pyproject.toml)
@@ -58,17 +59,17 @@ graph LR
 Install the core package (includes standard hashing retriever):
 
 ```bash
-pip install -e .
+pip install semantic-tool-router
 ```
 
-For advanced semantic embeddings, install the optional package extras:
+Optional extras for advanced embeddings:
 
 ```bash
-# To run local models via SentenceTransformers
-pip install -e .[sentence-transformers]
+# Local models via SentenceTransformers
+pip install semantic-tool-router[sentence-transformers]
 
-# To use OpenAI's hosted embedding models
-pip install -e .[openai]
+# OpenAI hosted embedding models
+pip install semantic-tool-router[openai]
 ```
 
 ---
@@ -154,7 +155,7 @@ python -m semantic_tool_router compare-retrievers \
 
 Use `--fixture-only` for a fast CI-friendly run without MCP servers.
 
-Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — on **28 live MCP tasks** with hybrid BM25 + safety penalties, quality profile reaches **85.7% hit@3** and **75.0% top-1**; hashing improves to **78.6% hit@3** (from 67.9% without hybrid).
+Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — on **28 live MCP tasks**, MiniLM reaches **89.3% hit@3**; quality profile reaches **85.7% hit@3** and **75.0% top-1**; hashing with BM25 reaches **78.6% hit@3**.
 
 To run the reproducible baseline benchmark suite across four official live MCP reference servers (Filesystem, Memory, Sequential Thinking, and Everything):
 

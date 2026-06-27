@@ -1,33 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 - 2026-06-27
 
-- Added hybrid BM25 + embedding fusion (default 40% BM25 weight) via `bm25.py`.
-- Added read-query safety penalties for destructive/write-only tools via `scoring.py`.
-- Router accepts `hybrid_bm25_weight` and `safety_penalty_enabled`; CLI adds `--hybrid-weight` and `--no-safety-penalty`.
-- Added tests: `test_bm25.py`, `test_scoring.py`, and router hybrid/safety cases.
-- Re-ran live MCP comparison with hybrid+safety defaults; updated benchmark results.
-- Added `--profile quality` CLI preset (MiniLM + cross-encoder) for production routing.
-- Re-ran retriever comparison on expanded suite; updated `benchmarks/results/comparison.md`.
-- Added `tests/test_cli.py` for profile preset behavior.
-- Published retriever comparison results in `benchmarks/results/comparison.md` and `comparison.json`.
-- Added GitHub issue templates (bug report, feature request) and a pull request template.
-- Added `docs/benchmark-contributing.md` and `docs/workshop-paper-outline.md`.
-- Updated README with positioning table, real CI badge, and comparison benchmark instructions.
-- Updated `docs/research-plan.md` with retriever comparison results.
-- Added an optional two-stage CrossEncoder reranker. The router now accepts a `Reranker`; when one is provided, the cheap embedding-similarity ranking produces a small candidate pool and the reranker rescores it before the final `top_k` is returned.
-- Wired `--reranker cross-encoder` and `--reranker-model` into all four CLI subcommands.
-- Added `examples/reranker_demo.py` end-to-end walkthrough.
-- Added open-source community files: `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, and `SECURITY.md`.
-- Added project URLs (Homepage, Issues, Changelog) and a real author record in `pyproject.toml`.
-- Tightened `LICENSE` holder attribution.
-- Added ruff and mypy configuration to `pyproject.toml` with a strict type-check profile scoped to the source package.
-- Refreshed the LangChain and LlamaIndex integration examples with a graceful import-error fallback so the routing path runs on any Python version.
-- Tidied docstrings and module headers across the source package and tests.
+- Added hybrid BM25 + embedding fusion with read-query safety penalties.
+- Added `--profile quality` (MiniLM + cross-encoder) and `--profile fast` (hashing + BM25).
+- Per-profile BM25 defaults: **0.4 for fast**, **0.0 for quality** (semantic embedders no longer diluted).
+- Added `compare-retrievers` CLI, expanded live MCP benchmark to 28 tasks, and GitHub issue templates.
+- Published on [PyPI](https://pypi.org/project/semantic-tool-router/).
 
-## 0.1.0-alpha - 2026-06-18
+## 0.1.0 - 2026-06-18
 
-The first alpha research prototype. Tags: `v0.1.0-alpha`.
+The first alpha research prototype.
 
 - Added the first semantic tool discovery router.
 - Added a dependency-light hashing embedder for local retrieval.

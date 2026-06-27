@@ -65,6 +65,7 @@ def run_live_suite(
     timeout: float = 60.0,
     embedding_provider: EmbeddingProvider | None = None,
     reranker: Reranker | None = None,
+    hybrid_bm25_weight: float = 0.4,
 ) -> dict[str, Any]:
     server_reports = []
     for case in cases:
@@ -77,6 +78,7 @@ def run_live_suite(
                 top_k,
                 embedding_provider=embedding_provider,
                 reranker=reranker,
+                hybrid_bm25_weight=hybrid_bm25_weight,
             )
         )
 
@@ -155,11 +157,13 @@ def _evaluate_server(
     top_k: int,
     embedding_provider: EmbeddingProvider | None = None,
     reranker: Reranker | None = None,
+    hybrid_bm25_weight: float = 0.4,
 ) -> dict[str, Any]:
     router = ToolRouter(
         ToolRegistry(list(snapshot.tools)),
         embedding_provider=embedding_provider,
         reranker=reranker,
+        hybrid_bm25_weight=hybrid_bm25_weight,
     )
     raw_by_name = {str(tool.get("name")): tool for tool in snapshot.raw_tools}
     all_tokens = estimate_tokens(snapshot.raw_tools)
