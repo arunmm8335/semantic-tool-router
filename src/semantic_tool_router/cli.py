@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 
+from semantic_tool_router.ablation import render_ablation_markdown, run_input_ablation
+from semantic_tool_router.agent_eval import LexicalSelector, RankOneSelector, evaluate_agent
 from semantic_tool_router.comparison import (
     comparison_payload,
     render_comparison_markdown,
@@ -257,9 +259,44 @@ def main(argv: list[str] | None = None) -> int:
     compare_parser.add_argument("--json-output")
     compare_parser.add_argument("--markdown-output")
 
+    ablation_parser = subparsers.add_parser(
+        "ablation",
+        help="Compare retrieval index inputs (description, examples, schema, full)",
+    )
+    ablation_parser.add_argument("--registry", default="examples/tools.json")
+    ablation_parser.add_argument("--tasks", default="benchmarks/tasks.json")
+    ablation_parser.add_argument("--top-k", type=int, default=3)
+    ablation_parser.add_argument("--json-output")
+    ablation_parser.add_argument("--markdown-output")
+
+    agent_parser = subparsers.add_parser(
+        "agent-eval",
+        help="Evaluate downstream agent tool selection after retrieval",
+    )
+    agent_parser.add_argument("--registry", default="examples/tools.json")
+    agent_parser.add_argument("--tasks", default="benchmarks/tasks.json")
+    agent_parser.add_argument("--top-k", type=int, default=3)
+    agent_parser.add_argument(
+        "--selector",
+        choices=["rank1", "lexical"],
+        default="rank1",
+        help="Simulated agent policy (default: rank1)",
+    )
+    agent_parser.add_argument("--json", action="store_true", dest="json_output")
+    add_embedder_args(agent_parser)
+    add_reranker_args(agent_parser)
+    add_profile_arg(agent_parser)
+    add_retrieval_args(agent_parser)
+
     args = parser.parse_args(argv)
 
-    if args.command in {"discover", "benchmark", "mcp-discover", "mcp-benchmark"}:
+    if args.command in {
+        "discover",
+        "benchmark",
+        "mcp-discover",
+        "mcp-benchmark",
+        "agent-eval",
+    }:
         apply_profile(args)
 
     if args.command == "discover":
@@ -274,6 +311,10 @@ def main(argv: list[str] | None = None) -> int:
         return _mcp_inspect(args)
     if args.command == "compare-retrievers":
         return _compare_retrievers(args)
+    if args.command == "ablation":
+        return _ablation(args)
+    if args.command == "agent-eval":
+        return _agent_eval(args)
     return 1
 
 
@@ -537,6 +578,58 @@ def _mcp_inspect(args: argparse.Namespace) -> int:
         print(f"Executed: {args.tool}")
         print(_format_call_result(call_result))
     return 0
+
+
+def _ablation(args: argparse.Namespace) -> int:
+    results = run_input_ablation(args.registry, args.tasks, top_k=args.top_k)
+    markdown = render_ablation_markdown(
+        results,
+        registry_path=args.registry,
+        tasks_path=args.tasks,
+    )
+    print(markdown)
+    if args.json_output:
+        Path(args.json_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.json_output).write_text(
+            json.dumps({"results": results}, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    if args.markdown_output:
+        Path(args.markdown_output).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.markdown_output).write_text(markdown + "\n", encoding="utf-8")
+    return 0
+
+
+def _agent_eval(args: argparse.Namespace) -> int:
+    registry = ToolRegistry.from_file(args.registry)
+    router = _build_router(registry, args)
+    task_data = json.loads(Path(args.tasks).read_text(encoding="utf-8"))
+    tasks = tuple(BenchmarkTask.from_dict(item) for item in task_data)
+    selector = LexicalSelector() if args.selector == "lexical" else RankOneSelector()
+    report = evaluate_agent(
+        router,
+        tasks,
+        top_k=args.top_k,
+        selector=selector,
+        selector_name=args.selector,
+    )
+
+    if args.json_output:
+        print(json.dumps(report.as_dict(), indent=2, sort_keys=True))
+    else:
+        for item in report.evaluations:
+            status = "PASS" if item.end_to_end_success else "FAIL"
+            print(f"{status} {item.task.query}")
+            print(f"  expected:   {', '.join(item.task.expected_tools)}")
+            print(f"  retrieved:  {', '.join(item.retrieved_tools)}")
+            print(f"  selected:   {item.selected_tool}")
+        print()
+        print(f"selector:                 {report.selector_name}")
+        print(f"retrieval hit rate@{args.top_k}:  {report.retrieval_hit_rate:.2%}")
+        print(f"agent success rate:       {report.agent_success_rate:.2%}")
+        print(f"end-to-end success rate:  {report.end_to_end_success_rate:.2%}")
+
+    return 0 if report.end_to_end_success_rate == 1.0 else 1
 
 
 def _compare_retrievers(args: argparse.Namespace) -> int:

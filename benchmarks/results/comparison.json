@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-27T09:25:19.673219+00:00",
+  "generated_at": "2026-06-27T14:54:07.975739+00:00",
   "fixture": null,
   "live_mcp": [
     {
@@ -8,19 +8,19 @@
       "embedding_model": null,
       "reranker": null,
       "metrics": {
-        "hit_rate": 0.7857142857142857,
-        "top_1_accuracy": 0.4642857142857143,
-        "mrr": 0.6011904761904762,
-        "mean_context_saved": 0.6303110728860982
+        "hit_rate": 0.8235294117647058,
+        "top_1_accuracy": 0.6078431372549019,
+        "mrr": 0.7026143790849674,
+        "mean_context_saved": 0.6199477487742949
       },
       "nontrivial_metrics": {
-        "hit_rate": 0.7692307692307693,
-        "top_1_accuracy": 0.4230769230769231,
-        "mrr": 0.5705128205128205,
-        "mean_context_saved": 0.6787965400311827
+        "hit_rate": 0.8043478260869565,
+        "top_1_accuracy": 0.5652173913043478,
+        "mrr": 0.6702898550724637,
+        "mean_context_saved": 0.6873333736410661
       },
-      "task_count": 28,
-      "nontrivial_task_count": 26
+      "task_count": 51,
+      "nontrivial_task_count": 46
     },
     {
       "config": "sentence-transformers (all-MiniLM-L6-v2)",
@@ -28,19 +28,19 @@
       "embedding_model": "all-MiniLM-L6-v2",
       "reranker": null,
       "metrics": {
-        "hit_rate": 0.8928571428571429,
-        "top_1_accuracy": 0.6785714285714286,
-        "mrr": 0.7678571428571429,
-        "mean_context_saved": 0.6502216788774919
+        "hit_rate": 0.9215686274509803,
+        "top_1_accuracy": 0.7843137254901961,
+        "mrr": 0.8431372549019608,
+        "mean_context_saved": 0.645704833886883
       },
       "nontrivial_metrics": {
-        "hit_rate": 0.8846153846153846,
-        "top_1_accuracy": 0.6538461538461539,
-        "mrr": 0.75,
-        "mean_context_saved": 0.7002387310988374
+        "hit_rate": 0.9130434782608695,
+        "top_1_accuracy": 0.7608695652173914,
+        "mrr": 0.8260869565217391,
+        "mean_context_saved": 0.7158901419180659
       },
-      "task_count": 28,
-      "nontrivial_task_count": 26
+      "task_count": 51,
+      "nontrivial_task_count": 46
     },
     {
       "config": "hashing + cross-encoder",
@@ -48,19 +48,19 @@
       "embedding_model": null,
       "reranker": "cross-encoder",
       "metrics": {
-        "hit_rate": 0.8571428571428571,
-        "top_1_accuracy": 0.75,
-        "mrr": 0.7916666666666667,
-        "mean_context_saved": 0.6552905328757916
+        "hit_rate": 0.9215686274509803,
+        "top_1_accuracy": 0.803921568627451,
+        "mrr": 0.8529411764705882,
+        "mean_context_saved": 0.6384394190645091
       },
       "nontrivial_metrics": {
-        "hit_rate": 0.8461538461538461,
-        "top_1_accuracy": 0.7307692307692307,
-        "mrr": 0.7756410256410257,
-        "mean_context_saved": 0.7056974969431603
+        "hit_rate": 0.9130434782608695,
+        "top_1_accuracy": 0.782608695652174,
+        "mrr": 0.8369565217391305,
+        "mean_context_saved": 0.7078350080932602
       },
-      "task_count": 28,
-      "nontrivial_task_count": 26
+      "task_count": 51,
+      "nontrivial_task_count": 46
     },
     {
       "config": "sentence-transformers + cross-encoder",
@@ -68,19 +68,59 @@
       "embedding_model": "all-MiniLM-L6-v2",
       "reranker": "cross-encoder",
       "metrics": {
-        "hit_rate": 0.8571428571428571,
-        "top_1_accuracy": 0.75,
-        "mrr": 0.7916666666666667,
-        "mean_context_saved": 0.6541806679288316
+        "hit_rate": 0.9019607843137255,
+        "top_1_accuracy": 0.803921568627451,
+        "mrr": 0.8464052287581699,
+        "mean_context_saved": 0.6430447129864465
       },
       "nontrivial_metrics": {
-        "hit_rate": 0.8461538461538461,
-        "top_1_accuracy": 0.7307692307692307,
-        "mrr": 0.7756410256410257,
-        "mean_context_saved": 0.7045022577695109
+        "hit_rate": 0.8913043478260869,
+        "top_1_accuracy": 0.782608695652174,
+        "mrr": 0.8297101449275361,
+        "mean_context_saved": 0.712940877441495
       },
-      "task_count": 28,
-      "nontrivial_task_count": 26
+      "task_count": 51,
+      "nontrivial_task_count": 46
+    },
+    {
+      "config": "BGE-small (bge-small-en-v1.5)",
+      "embedder": "sentence-transformers",
+      "embedding_model": "BAAI/bge-small-en-v1.5",
+      "reranker": null,
+      "metrics": {
+        "hit_rate": 0.9411764705882353,
+        "top_1_accuracy": 0.8431372549019608,
+        "mrr": 0.888888888888889,
+        "mean_context_saved": 0.6448991734999103
+      },
+      "nontrivial_metrics": {
+        "hit_rate": 0.9347826086956522,
+        "top_1_accuracy": 0.8260869565217391,
+        "mrr": 0.8768115942028986,
+        "mean_context_saved": 0.7149969097499005
+      },
+      "task_count": 51,
+      "nontrivial_task_count": 46
+    },
+    {
+      "config": "BGE-small + cross-encoder",
+      "embedder": "sentence-transformers",
+      "embedding_model": "BAAI/bge-small-en-v1.5",
+      "reranker": "cross-encoder",
+      "metrics": {
+        "hit_rate": 0.9019607843137255,
+        "top_1_accuracy": 0.803921568627451,
+        "mrr": 0.8464052287581699,
+        "mean_context_saved": 0.6424329255733897
+      },
+      "nontrivial_metrics": {
+        "hit_rate": 0.8913043478260869,
+        "top_1_accuracy": 0.782608695652174,
+        "mrr": 0.8297101449275361,
+        "mean_context_saved": 0.7122625913965842
+      },
+      "task_count": 51,
+      "nontrivial_task_count": 46
     }
   ]
 }

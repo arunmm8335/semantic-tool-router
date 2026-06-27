@@ -153,9 +153,34 @@ python -m semantic_tool_router compare-retrievers \
   --markdown-output benchmarks/results/comparison.md
 ```
 
+Retrieval input ablation:
+
+```bash
+python -m semantic_tool_router ablation \
+  --registry examples/tools.json \
+  --tasks benchmarks/tasks.json \
+  --markdown-output benchmarks/results/ablation.md
+```
+
+Downstream agent evaluation:
+
+```bash
+python -m semantic_tool_router agent-eval \
+  --registry examples/tools.json \
+  --tasks benchmarks/tasks.json \
+  --profile quality \
+  --selector rank1
+```
+
 Use `--fixture-only` for a fast CI-friendly run without MCP servers.
 
-Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — on **28 live MCP tasks**, MiniLM reaches **89.3% hit@3**; quality profile reaches **85.7% hit@3** and **75.0% top-1**; hashing with BM25 reaches **78.6% hit@3**.
+Latest results: [benchmarks/results/comparison.md](benchmarks/results/comparison.md) — **51 live MCP tasks**: BGE-small **94.1% hit@3**; quality profile **90.2%**; hashing **82.4%**.
+
+Research artifacts:
+
+- [Input ablation](benchmarks/results/ablation.md)
+- [Agent evaluation](benchmarks/results/agent_eval.md)
+- [End-to-end demo notebook](examples/end_to_end_demo.ipynb)
 
 To run the reproducible baseline benchmark suite across four official live MCP reference servers (Filesystem, Memory, Sequential Thinking, and Everything):
 

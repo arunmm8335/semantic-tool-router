@@ -6,7 +6,7 @@ from semantic_tool_router.embeddings import (
     HashingEmbeddingProvider,
     cosine_similarity,
 )
-from semantic_tool_router.models import DiscoveryResult, ToolSpec
+from semantic_tool_router.models import DiscoveryResult, SearchIndexMode, ToolSpec
 from semantic_tool_router.registry import ToolRegistry
 from semantic_tool_router.reranker import Reranker
 from semantic_tool_router.scoring import safety_penalty
@@ -22,6 +22,7 @@ class ToolRouter:
         hybrid_bm25_weight: float = 0.4,
         safety_penalty_enabled: bool = True,
         safety_penalty_amount: float = 0.2,
+        index_mode: SearchIndexMode = "full",
     ) -> None:
         if rerank_multiplier < 1:
             raise ValueError("rerank_multiplier must be >= 1")
@@ -37,14 +38,16 @@ class ToolRouter:
         self.hybrid_bm25_weight = hybrid_bm25_weight
         self.safety_penalty_enabled = safety_penalty_enabled
         self.safety_penalty_amount = safety_penalty_amount
+        self.index_mode = index_mode
 
         tools = list(self.registry.tools())
         self._tool_vectors = {
-            tool.name: self.embedding_provider.embed(tool.searchable_text()) for tool in tools
+            tool.name: self.embedding_provider.embed(tool.searchable_text(index_mode))
+            for tool in tools
         }
         self._bm25: Bm25Index | None = None
         if hybrid_bm25_weight > 0.0 and tools:
-            documents = {tool.name: tool.searchable_text() for tool in tools}
+            documents = {tool.name: tool.searchable_text(index_mode) for tool in tools}
             self._bm25 = Bm25Index(documents)
 
     def discover(
@@ -108,7 +111,9 @@ def _reasons(
     penalty: float,
 ) -> list[str]:
     query_terms = {part.lower() for part in query.replace("-", " ").replace("_", " ").split()}
-    tool_terms = set(tool.searchable_text().lower().replace("-", " ").replace("_", " ").split())
+    tool_terms = set(
+        tool.searchable_text("full").lower().replace("-", " ").replace("_", " ").split()
+    )
     overlap = sorted(query_terms & tool_terms)
 
     reasons = []

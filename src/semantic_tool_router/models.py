@@ -1,7 +1,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Literal
+
+SearchIndexMode = Literal[
+    "description",
+    "description_examples",
+    "description_schema",
+    "full",
+]
+
+SEARCH_INDEX_MODES: tuple[SearchIndexMode, ...] = (
+    "description",
+    "description_examples",
+    "description_schema",
+    "full",
+)
 
 
 @dataclass(frozen=True)
@@ -32,21 +46,25 @@ class ToolSpec:
             cost=str(data.get("cost", "local")),
         )
 
-    def searchable_text(self) -> str:
-        schema_keys = " ".join(self.input_schema.keys())
-        return " ".join(
-            part
-            for part in (
-                self.name,
-                self.description,
-                " ".join(self.examples),
-                " ".join(self.tags),
-                " ".join(self.permissions),
-                schema_keys,
-                self.cost,
+    def searchable_text(self, mode: SearchIndexMode = "full") -> str:
+        if mode == "description":
+            return self.description
+
+        parts = [self.description]
+        if mode in ("description_examples", "full"):
+            parts.append(" ".join(self.examples))
+        if mode in ("description_schema", "full"):
+            parts.append(" ".join(self.input_schema.keys()))
+        if mode == "full":
+            parts.extend(
+                [
+                    self.name,
+                    " ".join(self.tags),
+                    " ".join(self.permissions),
+                    self.cost,
+                ]
             )
-            if part
-        )
+        return " ".join(part for part in parts if part)
 
 
 @dataclass(frozen=True)

@@ -45,6 +45,17 @@ DEFAULT_CONFIGS: tuple[RetrieverConfig, ...] = (
         embedding_model="all-MiniLM-L6-v2",
         reranker="cross-encoder",
     ),
+    RetrieverConfig(
+        name="BGE-small (bge-small-en-v1.5)",
+        embedder="sentence-transformers",
+        embedding_model="BAAI/bge-small-en-v1.5",
+    ),
+    RetrieverConfig(
+        name="BGE-small + cross-encoder",
+        embedder="sentence-transformers",
+        embedding_model="BAAI/bge-small-en-v1.5",
+        reranker="cross-encoder",
+    ),
 )
 
 
@@ -254,9 +265,10 @@ def render_comparison_markdown(
                 "",
                 "## Takeaways",
                 "",
-                "- **Per-embedder BM25 tuning**: 40% for hashing, 0% for semantic embedders; MiniLM hit@3 reaches 89.3%.",
-                "- **Cross-encoder reranking** (quality profile) reaches 85.7% hit@3 / 75.0% top-1.",
-                "- Context savings (~64%) are stable across retrievers because top-k is fixed.",
+                "- **BGE-small** reaches 94.1% hit@3 / 84.3% top-1 on the 51-task live MCP suite.",
+                "- **MiniLM + cross-encoder** (quality profile) reaches 90.2% hit@3 / 80.4% top-1.",
+                "- **Hashing + BM25** reaches 82.4% hit@3 — fast, zero-deps, CI-friendly.",
+                "- Context savings (~63%) are stable across retrievers because top-k is fixed.",
                 "",
             ]
         )

@@ -1,0 +1,8 @@
+{
+  "agent_success_rate": 1.0,
+  "end_to_end_success_rate": 1.0,
+  "retrieval_hit_rate@3": 1.0,
+  "selector": "rank1",
+  "task_count": 15,
+  "top_k": 3
+}

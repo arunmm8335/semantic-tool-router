@@ -37,6 +37,26 @@
         {
           "query": "Read README and LICENSE together in one request",
           "expected_tools": ["read_multiple_files"]
+        },
+        {
+          "query": "List the source folder contents with each file size shown",
+          "expected_tools": ["list_directory_with_sizes"]
+        },
+        {
+          "query": "Search this project for every JSON configuration file",
+          "expected_tools": ["search_files"]
+        },
+        {
+          "query": "Move pyproject.toml into a temporary backup folder",
+          "expected_tools": ["move_file"]
+        },
+        {
+          "query": "Update a single line inside the README file",
+          "expected_tools": ["edit_file"]
+        },
+        {
+          "query": "Read an image or binary media file from the repository",
+          "expected_tools": ["read_media_file"]
         }
       ]
     },
@@ -107,6 +127,26 @@
         {
           "query": "Display the full graph of everything currently in memory",
           "expected_tools": ["read_graph"]
+        },
+        {
+          "query": "Create a new project entity for the semantic tool router",
+          "expected_tools": ["create_entities"]
+        },
+        {
+          "query": "Attach a meeting summary observation to an existing team node",
+          "expected_tools": ["add_observations"]
+        },
+        {
+          "query": "Look up stored nodes whose name contains benchmark",
+          "expected_tools": ["search_nodes"]
+        },
+        {
+          "query": "Drop an incorrect link between two unrelated concepts",
+          "expected_tools": ["delete_relations"]
+        },
+        {
+          "query": "Fetch a specific stored node by its identifier",
+          "expected_tools": ["open_nodes"]
         }
       ]
     },
@@ -124,6 +164,18 @@
         },
         {
           "query": "Revise an earlier line of reasoning after discovering a mistake",
+          "expected_tools": ["sequentialthinking"]
+        },
+        {
+          "query": "Break down a complex debugging problem into ordered reasoning steps",
+          "expected_tools": ["sequentialthinking"]
+        },
+        {
+          "query": "Plan the rollout of a new retrieval feature in stages",
+          "expected_tools": ["sequentialthinking"]
+        },
+        {
+          "query": "Compare two router designs using structured sequential analysis",
           "expected_tools": ["sequentialthinking"]
         }
       ]
@@ -150,6 +202,46 @@
         },
         {
           "query": "Start a task that takes a while to finish",
+          "expected_tools": ["trigger-long-running-operation"]
+        },
+        {
+          "query": "Read an environment variable from the host process",
+          "expected_tools": ["get-env"]
+        },
+        {
+          "query": "Return a message with extra annotation metadata attached",
+          "expected_tools": ["get-annotated-message"]
+        },
+        {
+          "query": "Run a simulated research query against sample data",
+          "expected_tools": ["simulate-research-query"]
+        },
+        {
+          "query": "Provide a reference handle to an external resource",
+          "expected_tools": ["get-resource-reference"]
+        },
+        {
+          "query": "List hyperlinks or resource URLs exposed by the server",
+          "expected_tools": ["get-resource-links"]
+        },
+        {
+          "query": "Turn simulated diagnostic logging on or off",
+          "expected_tools": ["toggle-simulated-logging"]
+        },
+        {
+          "query": "Compress a file and expose it as a downloadable resource",
+          "expected_tools": ["gzip-file-as-resource"]
+        },
+        {
+          "query": "Echo back a short diagnostic string for connectivity testing",
+          "expected_tools": ["echo"]
+        },
+        {
+          "query": "Compute the sum of 42 and 58",
+          "expected_tools": ["get-sum"]
+        },
+        {
+          "query": "Kick off a long-running background operation and track it",
           "expected_tools": ["trigger-long-running-operation"]
         }
       ]

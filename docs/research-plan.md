@@ -16,7 +16,7 @@ python -m semantic_tool_router benchmark --registry examples/tools.json --tasks 
 
 ## Next Experiments
 
-1. Compare retrieval inputs: description only, description plus examples, description plus schema, and all metadata.
+1. ~~Compare retrieval inputs: description only, description plus examples, description plus schema, and all metadata.~~ **Done** — `python -m semantic_tool_router ablation`; see [ablation.md](../benchmarks/results/ablation.md).
 2. ~~Compare retrievers: keyword BM25, local hashing embeddings, sentence-transformer embeddings, hosted embeddings, and LLM reranking.~~ **Done** — see [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
 3. Measure context savings: tokens for all tools versus tokens for retrieved tools.
 4. ~~Add safety scoring: penalize tools with network, write, execute, or destructive permissions unless the task clearly needs them.~~ **Done** — read-query safety penalties in `scoring.py` (default on).
@@ -95,7 +95,24 @@ for destructive/write-only tools by default:
 
 Hashing hit@3 rises **+10.7 points** vs the expanded-suite embedding-only baseline.
 
-Full tables and reproduction commands: [benchmarks/results/comparison.md](../benchmarks/results/comparison.md).
+## 51-Task Live Suite + BGE (June 27, 2026)
+
+Suite expanded to **51 tasks** (12 filesystem, 20 memory, 5 sequential-thinking, 14 everything):
+
+| Config | Hit rate@3 | Top-1 | MRR |
+| --- | ---: | ---: | ---: |
+| Hashing | 82.4% | 60.8% | 0.703 |
+| MiniLM | 92.2% | 78.4% | 0.843 |
+| MiniLM + cross-encoder | 90.2% | 80.4% | 0.846 |
+| **BGE-small** | **94.1%** | **84.3%** | **0.889** |
+| BGE-small + cross-encoder | 90.2% | 80.4% | 0.846 |
+
+## Downstream Agent Eval
+
+`agent-eval` measures retrieval hit@k vs simulated agent selection (`rank1`, `lexical`).
+Fixture suite saturates at 100%; live MCP eval is the next step.
+
+Full tables: [comparison.md](../benchmarks/results/comparison.md), [ablation.md](../benchmarks/results/ablation.md), [agent_eval.md](../benchmarks/results/agent_eval.md).
 
 The JSON fixture suite (12 tools) saturates at 100% for all retrievers — expand
 it or rely on the live MCP suite for meaningful ranking differences.

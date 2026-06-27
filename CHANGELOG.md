@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Added retrieval input ablation (`ablation` CLI, `SearchIndexMode` on `ToolSpec`).
+- Added downstream agent evaluation (`agent-eval` CLI with `rank1` and `lexical` selectors).
+- Expanded live MCP benchmark from 28 to **51 tasks**.
+- Added BGE-small to retriever comparison (94.1% hit@3 on live suite).
+- Added `examples/end_to_end_demo.ipynb` and `benchmarks/results/ablation.md`.
+
 ## 0.2.0 - 2026-06-27
 
 - Added hybrid BM25 + embedding fusion with read-query safety penalties.

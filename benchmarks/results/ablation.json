@@ -1,0 +1,44 @@
+{
+  "results": [
+    {
+      "index_mode": "description",
+      "metrics": {
+        "task_count": 15,
+        "top_k": 3,
+        "hit_rate@3": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0
+      }
+    },
+    {
+      "index_mode": "description_examples",
+      "metrics": {
+        "task_count": 15,
+        "top_k": 3,
+        "hit_rate@3": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0
+      }
+    },
+    {
+      "index_mode": "description_schema",
+      "metrics": {
+        "task_count": 15,
+        "top_k": 3,
+        "hit_rate@3": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0
+      }
+    },
+    {
+      "index_mode": "full",
+      "metrics": {
+        "task_count": 15,
+        "top_k": 3,
+        "hit_rate@3": 1.0,
+        "top_1_accuracy": 1.0,
+        "mrr": 1.0
+      }
+    }
+  ]
+}
