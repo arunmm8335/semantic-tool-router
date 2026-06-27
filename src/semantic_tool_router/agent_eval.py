@@ -86,7 +86,7 @@ class AgentEvalReport:
     def end_to_end_success_rate(self) -> float:
         return self._mean(float(item.end_to_end_success) for item in self.evaluations)
 
-    def as_dict(self) -> dict[str, float | int | str]:
+    def as_dict(self) -> dict[str, object]:
         return {
             "selector": self.selector_name,
             "task_count": self.task_count,
