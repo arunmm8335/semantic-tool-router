@@ -5,10 +5,15 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12-blue)](pyproject.toml)
 [![Development Status](https://img.shields.io/badge/status-alpha-orange)](CHANGELOG.md)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/arunmm8335/semantic-tool-router/blob/master/examples/end_to_end_demo.ipynb)
 
 > **Dynamic runtime tool discovery and retrieval-augmented routing for AI agents.**
 
+**Are your LLM agents hallucinating tools? Is your context window overflowing with 100+ MCP schemas?**
+
 Semantic Tool Router is a dependency-light library designed to manage the "Many-Tool" problem in LLM and Agentic workflows. Instead of exposing every available tool or Model Context Protocol (MCP) server schema to a model context window (which increases costs and degrades accuracy), it embeds tools based on their descriptions and dynamically retrieves a focused candidate set ($top-k$) for the current task.
+
+This acts as a Retrieval-Augmented Generation (RAG) pre-processing layer specifically for your tools.
 
 ---
 
